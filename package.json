@@ -48,7 +48,7 @@
     "@nestjs/cli": "^10.4.5",
     "@nestjs/schematics": "^10.1.2",
     "@nestjs/testing": "^10.0.0",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.19.25",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.0"

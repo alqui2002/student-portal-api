@@ -7,7 +7,6 @@ import { JwtDecodeGuard } from 'src/auth/jwt-decode.guard';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  // ✅ Usa query string en lugar de /unread
   @UseGuards(JwtDecodeGuard)
   @Get()
   getNotifications(

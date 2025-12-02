@@ -14,33 +14,30 @@ export class JwtDecodeGuard implements CanActivate {
     const authHeader = request.headers['authorization'];
 
     if (!authHeader) {
-      throw new UnauthorizedException('Falta el header Authorization');
+      throw new UnauthorizedException('Authorization header missing');
     }
 
     const token = authHeader.split(' ')[1];
     if (!token) {
-      throw new UnauthorizedException('Token no encontrado');
+      throw new UnauthorizedException('Token not found');
     }
 
     try {
-      // ⚠️ No verificamos firma, solo decodificamos el token
       const decoded = jwt.decode(token);
 
       if (!decoded || typeof decoded === 'string') {
-        throw new UnauthorizedException('Token inválido');
+        throw new UnauthorizedException('Invalid token');
       }
 
-      // Validamos expiración
       const now = Math.floor(Date.now() / 1000);
       if (decoded.exp && decoded.exp < now) {
-        throw new UnauthorizedException('Token expirado');
+        throw new UnauthorizedException('Token expired');
       }
 
-      // Guardamos los datos del usuario para usarlos luego
       request['user'] = decoded;
       return true;
     } catch (err) {
-      throw new UnauthorizedException('Token inválido o expirado');
+      throw new UnauthorizedException('Invalid or expired token');
     }
   }
 }

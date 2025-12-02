@@ -18,11 +18,10 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { Logger } from '@nestjs/common';
 
-
 @Injectable()
 export class EnrollmentsService {
   private readonly HUB_URL = process.env.HUB_URL || 'http://localhost:3001';
-  private readonly logger = new Logger(EnrollmentsService.name)
+  private readonly logger = new Logger(EnrollmentsService.name);
   constructor(
     @InjectRepository(Enrollment)
     private enrollmentRepo: Repository<Enrollment>,
@@ -36,14 +35,13 @@ export class EnrollmentsService {
     private historyRepo: Repository<AcademicHistory>,
     private readonly gradesService: GradesService,
     private readonly httpService: HttpService,
-
-  ) { }
+  ) {}
 
   private async sendEnrollmentEventToHub(
     userId: string,
     courseId: string,
     commissionId: string,
-    action: 'update' | 'delete' = 'update'
+    action: 'update' | 'delete' = 'update',
   ) {
     const payload = {
       userId,
@@ -57,10 +55,9 @@ export class EnrollmentsService {
 
     try {
       await lastValueFrom(this.httpService.post(endpoint, payload));
-      this.logger.log(`Evento enviado al Hub → ${endpoint}`);
+      this.logger.log(`Event sent to Hub → ${endpoint}`);
     } catch (err) {
-      this.logger.error(`Error enviando evento al Hub: ${err.message}`);
-      // opcional: guardalo en una tabla local para reintentar más tarde
+      this.logger.error(`Error sending event to Hub: ${err.message}`);
     }
   }
 
@@ -69,7 +66,9 @@ export class EnrollmentsService {
 
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const course = await this.courseRepo.findOne({ where: { id: courseId } });
-    const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
+    const commission = await this.commissionRepo.findOne({
+      where: { id: commissionId },
+    });
 
     if (!user || !course || !commission) {
       throw new NotFoundException('Invalid enrollment data');
@@ -88,7 +87,9 @@ export class EnrollmentsService {
         .filter((h) => h.status === 'passed')
         .map((h) => h.course.id);
 
-      const missing = course.correlates.filter((id) => !approvedIds.includes(id));
+      const missing = course.correlates.filter(
+        (id) => !approvedIds.includes(id),
+      );
 
       if (missing.length > 0) {
         const missingCourses = await this.courseRepo.find({
@@ -110,10 +111,16 @@ export class EnrollmentsService {
       where: { user: { id: userId }, commission: { id: commissionId } },
     });
     if (existingEnrollment) {
-      throw new BadRequestException('User already enrolled in this commission');
+      throw new BadRequestException(
+        'User already enrolled in this commission',
+      );
     }
 
-    const enrollment = this.enrollmentRepo.create({ user, course, commission });
+    const enrollment = this.enrollmentRepo.create({
+      user,
+      course,
+      commission,
+    });
     commission.availableSpots -= 1;
     await this.commissionRepo.save(commission);
     await this.enrollmentRepo.save(enrollment);
@@ -132,8 +139,12 @@ export class EnrollmentsService {
     });
     await this.historyRepo.save(history);
     await this.gradesService.createInitial(user.id, commission.id);
-    await this.sendEnrollmentEventToHub(dto.userId, dto.courseId, dto.commissionId, 'update');
-
+    await this.sendEnrollmentEventToHub(
+      dto.userId,
+      dto.courseId,
+      dto.commissionId,
+      'update',
+    );
 
     return {
       message: 'Enrollment successful and academic history record created',
@@ -157,10 +168,8 @@ export class EnrollmentsService {
         finalNote: history.finalNote,
         status: history.status,
       },
-    }
-
+    };
   }
-
 
   async withdraw(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
@@ -180,9 +189,13 @@ export class EnrollmentsService {
     });
 
     await this.enrollmentRepo.remove(enrollment);
-    await this.sendEnrollmentEventToHub(userId, enrollment.course.id, commissionId, 'delete');
+    await this.sendEnrollmentEventToHub(
+      userId,
+      enrollment.course.id,
+      commissionId,
+      'delete',
+    );
     return { message: 'Successfully withdrawn and academic history removed' };
-
   }
 
   async findByUser(userId: string) {
@@ -206,36 +219,34 @@ export class EnrollmentsService {
 
     return enrollments.map((enr) => {
       const relatedHistory = histories.find(
-        (h) => h.commission?.id === enr.commission?.id
+        (h) => h.commission?.id === enr.commission?.id,
       );
 
       return {
         enrollmentId: enr.id,
         course: enr.course
           ? {
-            id: enr.course.id,
-            name: enr.course.name,
-            code: enr.course.code,
-          }
-          : { id: null, name: 'Sin curso asignado' },
+              id: enr.course.id,
+              name: enr.course.name,
+              code: enr.course.code,
+            }
+          : { id: null, name: 'No course assigned' },
         commission: enr.commission
           ? {
-            id: enr.commission.id,
-            professorName: enr.commission.professorName,
-            shift: enr.commission.shift,
-            days: enr.commission.days,
-            startTime: enr.commission.startTime,
-            endTime: enr.commission.endTime,
-            classroom: enr.commission.classRoom,
-          }
-          : { id: null, professorName: 'Sin comisión asignada' },
+              id: enr.commission.id,
+              professorName: enr.commission.professorName,
+              shift: enr.commission.shift,
+              days: enr.commission.days,
+              startTime: enr.commission.startTime,
+              endTime: enr.commission.endTime,
+              classroom: enr.commission.classRoom,
+            }
+          : { id: null, professorName: 'No commission assigned' },
         status: relatedHistory?.status || 'in_progress',
         finalNote: relatedHistory?.finalNote ?? null,
       };
     });
   }
-
-
 
   async findEnrollmentDetail(userId: string, commissionId: string) {
     const enrollment = await this.enrollmentRepo.findOne({
@@ -254,17 +265,15 @@ export class EnrollmentsService {
         : null,
       commission: enrollment.commission
         ? {
-          id: enrollment.commission.id,
-          professorName: enrollment.commission.professorName,
-          days: enrollment.commission.days,
-          shift: enrollment.commission.shift,
-          startTime: enrollment.commission.startTime,
-          endTime: enrollment.commission.endTime,
-          classroom: enrollment.commission.classRoom
-        }
+            id: enrollment.commission.id,
+            professorName: enrollment.commission.professorName,
+            days: enrollment.commission.days,
+            shift: enrollment.commission.shift,
+            startTime: enrollment.commission.startTime,
+            endTime: enrollment.commission.endTime,
+            classroom: enrollment.commission.classRoom,
+          }
         : null,
     };
   }
-
-
 }

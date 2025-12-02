@@ -37,10 +37,10 @@ export class CalendarEvent {
   updatedAt: Date;
 
   @Column({ nullable: true })
-  sourceModule?: string; // quién lo emitió (Eventos, Estudiantes, etc.)
+  sourceModule?: string; 
 
   @Column({ nullable: true })
-  eventStatus?: string; // active, cancelled, etc.
+  eventStatus?: string; 
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   user?: User;

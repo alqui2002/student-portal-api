@@ -2,14 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AcademicHistory } from './entities/academic-history.entity';
-import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class AcademicHistoryService {
   constructor(
     @InjectRepository(AcademicHistory)
     private historyRepo: Repository<AcademicHistory>,
-  ) { }
+  ) {}
 
   async getUserHistory(userId: string) {
     const histories = await this.historyRepo.find({
@@ -26,21 +25,20 @@ export class AcademicHistoryService {
       id: h.id,
       course: h.course
         ? { id: h.course.id, name: h.course.name }
-        : { id: null, name: 'Curso no encontrado' },
+        : { id: null, name: 'Course not found' },
       commission: h.commission
         ? {
-          id: h.commission.id,
-          professorName: h.commission.professorName,
-          shift: h.commission.shift,
-        }
-        : { id: null, professorName: 'Comisión no encontrada' },
+            id: h.commission.id,
+            professorName: h.commission.professorName,
+            shift: h.commission.shift,
+          }
+        : { id: null, professorName: 'Commission not found' },
       semester: h.semester,
       year: h.year,
       status: h.status,
       finalNote: h.finalNote,
     }));
   }
-
 
   async updateGrade(
     userId: string,

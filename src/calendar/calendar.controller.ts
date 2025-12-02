@@ -44,5 +44,4 @@ export class CalendarController {
   ) {
     return this.service.updateStatus(id, body.status);
   }
-
 }

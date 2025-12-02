@@ -9,7 +9,7 @@ import {
 export class CreateCalendarEventDto {
   @IsString()
   @IsNotEmpty()
-  id: string; // ahora obligatorio y debe ser string
+  id: string; 
 
   @IsString()
   @IsNotEmpty()
@@ -47,7 +47,7 @@ export class CreateCalendarEventDto {
 
   @IsISO8601()
   @IsOptional()
-  updatedAt?: string; // 👈 ya aceptado
+  updatedAt?: string; 
 
   @IsString()
   @IsOptional()
