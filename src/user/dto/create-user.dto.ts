@@ -12,5 +12,5 @@ export class CreateUserDto {
   name: string;
 
   @IsUUID()
-  careerId: string;
+  careerId?: string;
 }
