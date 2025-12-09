@@ -7,7 +7,6 @@ import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  // ✅ Usa query string en lugar de /unread
   @UseGuards(ExternalJwtAuthGuard)
   @Get()
   getNotifications(

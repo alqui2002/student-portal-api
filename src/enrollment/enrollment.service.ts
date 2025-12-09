@@ -60,7 +60,6 @@ export class EnrollmentsService {
       this.logger.log(`Evento enviado al Hub → ${endpoint}`);
     } catch (err) {
       this.logger.error(`Error enviando evento al Hub: ${err.message}`);
-      // opcional: guardalo en una tabla local para reintentar más tarde
     }
   }
 
@@ -265,6 +264,4 @@ export class EnrollmentsService {
         : null,
     };
   }
-
-
 }

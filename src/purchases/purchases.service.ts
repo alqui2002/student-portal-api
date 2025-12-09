@@ -53,7 +53,6 @@ export class PurchasesService {
   
       if (!user) throw new Error('Usuario no encontrado');
   
-      // 2️⃣ Hacer la llamada a CORE
       const response = await axios.get(
         'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers/mine',
         {
@@ -83,7 +82,7 @@ export class PurchasesService {
         });
 
         const inserted = await this.purchaseRepo.save(purchase);
-        saved.push(inserted); // ✔ ahora sí funciona
+        saved.push(inserted); 
       }
 
   
@@ -117,7 +116,6 @@ export class PurchasesService {
 
       const items = order.Item_compra ?? [];
 
-      // 🟡 Caso sin items → inserto compra genérica
       if (items.length === 0) {
         const purchase = this.purchaseRepo.create({
           user,

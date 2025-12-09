@@ -7,7 +7,6 @@ import { Notification } from '../../notifications/entities/notifications.entity'
 import { Attendance } from '../../attendance/entities/attendance.entity';
 import { Grade } from 'src/grades/entities/grade.entity';
 
-
 @Entity()
 export class User {
   @PrimaryColumn('uuid')

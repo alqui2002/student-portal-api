@@ -7,7 +7,6 @@ import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
-  // ✅ Registrar asistencia de un usuario en una comisión
   @Post(':userId')
   markAttendance(
     @Param('commissionId') commissionId: string,
@@ -15,26 +14,24 @@ export class AttendanceController {
     @Body() body: { present: boolean; date?: string },
   ) {
     return this.attendanceService.markAttendance(
-      userId,           // 👈 mismo orden que antes
+      userId,           
       commissionId,
       body.present,
       body.date,
     );
   }
 
-  // ✅ Obtener la asistencia de un usuario en una comisión
   @Get(':userId')
   getUserAttendance(
     @Param('commissionId') commissionId: string,
     @Param('userId') userId: string,
   ) {
     return this.attendanceService.getUserAttendance(
-      userId,           // 👈 mismo orden que antes
+      userId,           
       commissionId,
     );
   }
 
-  // ✅ Obtener todas las asistencias de una comisión
   @Get()
   getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);

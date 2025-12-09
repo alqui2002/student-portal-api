@@ -19,7 +19,6 @@ export class CoursesService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  // ✅ Traer todos los cursos
   async findAll() {
     const courses = await this.courseRepo.find({
       relations: ['commissions', 'careers'],
@@ -37,7 +36,6 @@ export class CoursesService {
     }));
   }
 
-  // ✅ Traer curso por ID
   async findOne(id: string) {
     if (!id || !isUuid(id)) {
       console.warn('⚠️ findOne() recibió un ID inválido:', id);
@@ -78,7 +76,6 @@ export class CoursesService {
     };
   }
 
-  // ✅ Cursos por carrera del usuario autenticado
   async findCoursesForUser(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
@@ -124,7 +121,6 @@ export class CoursesService {
     );
   }
 
-  // ✅ Crear nuevo curso
   async create(courseData: Partial<Course>) {
     if (!courseData.name || !courseData.code)
       throw new BadRequestException('Missing course name or code');
@@ -133,7 +129,6 @@ export class CoursesService {
     return this.courseRepo.save(course);
   }
 
-  // ✅ Cursos disponibles para el usuario (según historial)
   async findAvailableCoursesForUser(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
