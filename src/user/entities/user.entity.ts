@@ -26,7 +26,7 @@ export class User {
 
 
   @ManyToOne(() => Career, (career) => career.users, { nullable: true })
-  career: Career;
+  career?: Career;
 
   @OneToMany(() => Purchase, (purchase) => purchase.user, { cascade: true })
   purchases: Purchase[];
