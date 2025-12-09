@@ -26,11 +26,17 @@ export class UserService {
     if (existingUser) {
       return existingUser;
     }
+    let career: Career | undefined = undefined;
 
-    const career = await this.careersRepository.findOne({
-      where: { id: createUserDto.careerId },
-    });
-
+    if (createUserDto.careerId) {
+      const career = await this.careersRepository.findOne({
+        where: { id: createUserDto.careerId },
+      });
+    
+      if (!career) {
+        throw new NotFoundException(`Career with id ${createUserDto.careerId} not found`);
+      }
+    }
     if (!career) {
       throw new NotFoundException(
         `Career with id ${createUserDto.careerId} not found`,
@@ -41,7 +47,7 @@ export class UserService {
       id: createUserDto.uuid,
       email: createUserDto.email,
       name: createUserDto.name,
-      career,
+      career: career ?? null,
     });
 
     return this.usersRepository.save(newUser);
