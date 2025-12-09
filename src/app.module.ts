@@ -14,6 +14,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { AuthModule } from './auth/auth.module';
 import { AcademicHistoryModule } from './academic-history/academic-history.module';
+import { DinningModule } from './dinning/dinning.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -29,7 +30,8 @@ import { AcademicHistoryModule } from './academic-history/academic-history.modul
     PurchasesModule, 
     NotificationsModule,
     AttendanceModule,
-    AuthModule
+    AuthModule,
+    DinningModule,
   ],
 })
 export class AppModule {}
