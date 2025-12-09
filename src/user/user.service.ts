@@ -18,40 +18,36 @@ export class UserService {
     return this.usersRepository.find();
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.usersRepository.findOne({
       where: { id: createUserDto.uuid },
     });
-
-    if (existingUser) {
-      return existingUser;
-    }
+  
+    if (existingUser) return existingUser;
+  
     let career: Career | undefined = undefined;
-
+  
     if (createUserDto.careerId) {
-      const career = await this.careersRepository.findOne({
+      let career = await this.careersRepository.findOne({
         where: { id: createUserDto.careerId },
       });
-    
-      if (!career) {
-        throw new NotFoundException(`Career with id ${createUserDto.careerId} not found`);
-      }
+  
+      if (!career)
+        throw new NotFoundException(
+          `Career with id ${createUserDto.careerId} not found`,
+        );
     }
-    if (!career) {
-      throw new NotFoundException(
-        `Career with id ${createUserDto.careerId} not found`,
-      );
-    }
-
+  
     const newUser = this.usersRepository.create({
       id: createUserDto.uuid,
-      email: createUserDto.email,
       name: createUserDto.name,
-      career: career ?? null,
+      email: createUserDto.email,
+      career, // ← undefined cuando no viene, PERFECTO
     });
-
+  
     return this.usersRepository.save(newUser);
   }
+  
   async findUserWithCourses(id: string) {
     const user = await this.usersRepository.findOne({
       where: { id },
