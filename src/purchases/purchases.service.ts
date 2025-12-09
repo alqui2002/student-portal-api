@@ -93,29 +93,35 @@ export class PurchasesService {
       throw new Error('Error al sincronizar transferencias');
     }
   }
+
   async syncStorePurchases(userUuid: string, token: string) {
     const user = await this.userRepo.findOne({ where: { id: userUuid } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
-
+  
+    // 📌 Nuevo endpoint UADE Store
     const { data: orders } = await axios.get(
       `https://uadestore.onrender.com/api/orders/me?userId=${userUuid}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-
-    const existing = await this.purchaseRepo.find({
+  
+    // 💾 Buscar compras ya registradas
+    const existingPurchases = await this.purchaseRepo.find({
       where: { user: { id: user.id } },
     });
-
-    const existingDates = new Set(existing.map((p) => p.date.toISOString()));
-
+  
+    const existingDates = new Set(
+      existingPurchases.map((p) => p.date.toISOString())
+    );
+  
     const savedPurchases: Purchase[] = [];
-
+  
     for (const order of orders) {
       const orderDateISO = new Date(order.created_at).toISOString();
       if (existingDates.has(orderDateISO)) continue;
-
+  
       const items = order.Item_compra ?? [];
-
+  
+      // 🟦 Caso: compra sin items (raro, pero puede pasar)
       if (items.length === 0) {
         const purchase = this.purchaseRepo.create({
           user,
@@ -131,41 +137,42 @@ export class PurchasesService {
             },
           ],
         });
-
-        const saved = await this.purchaseRepo.save(purchase);
-        savedPurchases.push(saved);
+  
+        savedPurchases.push(await this.purchaseRepo.save(purchase));
         continue;
       }
-
+  
+      // 🟩 Convertir Item_compra → tu formato product[]
       const productArray = items.map((item) => {
         const articulo = item?.Stock?.Articulo;
-      
+  
         return {
           name: articulo?.Titulo ?? "Producto UADE Store",
           description: articulo?.descripcion ?? "Sin descripción",
-          productCode: `store-${item.id}`,
-          subtotal: item?.subtotal?.toString(),
-          quantity: item?.cantidad ?? 1,
+          productCode: `store-item-${item.id}`,
+          subtotal: item.subtotal?.toString() ?? "0",
+          quantity: item.cantidad ?? 1,
         };
       });
-      
-
+  
+      // 🟧 Crear la compra final
       const purchase = this.purchaseRepo.create({
         user,
         total: order.total_compra.toString(),
         date: new Date(order.created_at),
+        product: productArray,
       });
-      
-
+  
       const saved = await this.purchaseRepo.save(purchase);
       savedPurchases.push(saved);
     }
-
+  
     return {
       success: true,
       inserted: savedPurchases.length,
       purchases: savedPurchases,
     };
   }
+  
   
 }
