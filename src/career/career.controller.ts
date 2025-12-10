@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { CareerService } from './career.service';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
+import { User } from 'src/auth/user.decorator';
 
 @Controller('careers')
 export class CareerController {
@@ -23,5 +25,15 @@ export class CareerController {
   @Post(':id/courses')
   addCourse(@Param('id') careerId: string, @Body('courseId') courseId: string) {
     return this.careerService.addCourse(careerId, courseId);
+  }
+
+  @Get('sync')
+  @UseGuards(ExternalJwtAuthGuard)
+  async syncCareerFromCore(
+    @User('sub') userUuid: string,
+    @Req() req
+  ) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.careerService.syncCareersFromCore(token);
   }
 }
