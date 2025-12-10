@@ -7,6 +7,13 @@ import { User } from 'src/auth/user.decorator';
 export class CareerController {
   constructor(private readonly careerService: CareerService) { }
 
+  @Get('sync')
+  @UseGuards(ExternalJwtAuthGuard)
+  async syncCareerFromCore(@Req() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.careerService.syncCareersFromCore(token);
+  }
+
   @Get()
   findAll() {
     return this.careerService.findAll();
@@ -27,12 +34,5 @@ export class CareerController {
     return this.careerService.addCourse(careerId, courseId);
   }
 
-  @Get('sync')
-  @UseGuards(ExternalJwtAuthGuard)
-  async syncCareerFromCore(
-    @Req() req
-  ) {
-    const token = req.headers.authorization?.split(' ')[1];
-    return this.careerService.syncCareersFromCore(token);
-  }
+  
 }

@@ -50,7 +50,7 @@ export class CareerService {
     try {
       // 1) Llamo al CORE
       const response = await axios.get(
-        "https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/careers",
+        "https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/carreras",
         {
           headers: { Authorization: `Bearer ${token}` }
         }
