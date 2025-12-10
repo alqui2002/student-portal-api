@@ -30,7 +30,6 @@ export class CareerController {
   @Get('sync')
   @UseGuards(ExternalJwtAuthGuard)
   async syncCareerFromCore(
-    @User('sub') userUuid: string,
     @Req() req
   ) {
     const token = req.headers.authorization?.split(' ')[1];
