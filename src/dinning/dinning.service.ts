@@ -47,14 +47,25 @@ export class DinningService {
   }
 
   async create(dto: CreateDinningReservationDto) {
+    const { userId, reservationId, ...rest } = dto;
     const reservation = this.dinningRepository.create({
       id: uuidv4(),
-      ...dto,
-      reservationDate: new Date(dto.reservationDate),
+      locationId: rest.locationId,
+      mealTime: rest.mealTime,
+      reservationTimeSlot: rest.reservationTimeSlot ?? null,
+      reservationDate: rest.reservationDate ?? new Date(),
+      status: rest.status,
+      cost: rest.cost,
+      slotStartTime: rest.slotStartTime,
+      slotEndTime: rest.slotEndTime,
     });
 
-    if (dto.userId) {
-      const user = await this.userRepository.findOne({ where: { id: dto.userId } });
+    if (rest.createdAt) {
+      reservation.createdAt = rest.createdAt;
+    }
+
+    if (userId) {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) throw new NotFoundException('User not found');
       reservation.user = user;
     }
@@ -64,10 +75,27 @@ export class DinningService {
 
   async update(id: string, dto: UpdateDinningReservationDto) {
     const reservation = await this.findOne(id);
-    Object.assign(reservation, dto);
+    const { reservationId, ...data } = dto;
+    Object.assign(reservation, data);
 
     if (dto.reservationDate) {
-      reservation.reservationDate = new Date(dto.reservationDate);
+      reservation.reservationDate = dto.reservationDate;
+    }
+
+    if (dto.createdAt) {
+      reservation.createdAt = dto.createdAt;
+    }
+
+    if (dto.reservationTimeSlot !== undefined) {
+      reservation.reservationTimeSlot = dto.reservationTimeSlot ?? null;
+    }
+
+    if (dto.slotStartTime) {
+      reservation.slotStartTime = dto.slotStartTime;
+    }
+
+    if (dto.slotEndTime) {
+      reservation.slotEndTime = dto.slotEndTime;
     }
 
     if (dto.userId) {

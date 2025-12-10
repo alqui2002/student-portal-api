@@ -20,14 +20,14 @@ export class DinningReservation {
   @JoinColumn({ name: 'userId' })
   user?: User;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 100 })
   locationId: string;
 
   @Column({ type: 'varchar', length: 50 })
   mealTime: string;
 
-  @Column({ type: 'varchar', length: 100 })
-  reservationTimeSlot: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  reservationTimeSlot?: string | null;
 
   @Column({ type: 'timestamp with time zone' })
   reservationDate: Date;
