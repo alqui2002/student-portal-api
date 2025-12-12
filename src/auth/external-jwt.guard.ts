@@ -28,7 +28,8 @@ export class ExternalJwtAuthGuard implements CanActivate {
           kind: 'access',
           token,
         },
-        { headers: { 'Content-Type': 'application/json' } },
+        { headers: { 'Content-Type': 'application/json', authorization: `Bearer ${token}`,
+      } },
       );
 
       const data = response.data;
