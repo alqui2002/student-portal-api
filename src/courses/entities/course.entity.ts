@@ -10,7 +10,7 @@ export class Course {
   id: string;
 
   @Column({ unique: true })
-  code: string;
+  code?: string;
 
   @Column()
   name: string;

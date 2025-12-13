@@ -1,6 +1,7 @@
 import { IsString, IsOptional, IsArray } from 'class-validator';
 
 export class CreateCourseDto {
+  @IsOptional()
   @IsString()
   code: string;
 
