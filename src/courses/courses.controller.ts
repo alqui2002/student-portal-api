@@ -36,4 +36,15 @@ export class CoursesController {
   create(@Body() dto: CreateCourseDto) {
     return this.coursesService.create(dto);
   }
+
+  @Post('core-event')
+  async upsertFromCore(@Body() body: {
+    uuid: string;
+    name: string;
+    description?: string;
+    careerId: string;
+  }) {
+    return this.coursesService.upsertFromCore(body);
+  }
+
 }

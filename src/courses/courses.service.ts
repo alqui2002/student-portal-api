@@ -8,12 +8,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { User } from '../user/entities/user.entity';
+import { Career } from 'src/career/entities/career.entity';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepo: Repository<Course>,
+
+    @InjectRepository(Career)
+    private readonly careerRepo: Repository<Career>,
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -228,4 +232,69 @@ export class CoursesService {
       }),
     );
   }
+  private async linkCourseToCareer(careerId: string, courseId: string) {
+    const career = await this.careerRepo.findOne({
+      where: { id: careerId },
+      relations: ['courses'],
+    });
+  
+    if (!career) {
+      throw new NotFoundException(`Career ${careerId} not found`);
+    }
+  
+    const alreadyLinked = career.courses.some(
+      (c) => c.id === courseId,
+    );
+  
+    if (alreadyLinked) return;
+  
+    const course = await this.courseRepo.findOne({
+      where: { id: courseId },
+    });
+  
+    if (!course) {
+      throw new NotFoundException(`Course ${courseId} not found`);
+    }
+  
+    career.courses.push(course);
+    await this.careerRepo.save(career);
+  }
+  
+
+  async upsertFromCore(dto: {
+    uuid: string;
+    name: string;
+    description?: string;
+    careerId: string;
+  }) {
+    let course = await this.courseRepo.findOne({
+      where: { id: dto.uuid },
+    });
+  
+    if (!course) {
+      course = this.courseRepo.create({
+        id: dto.uuid,
+        name: dto.name,
+        description: dto.description, 
+      });
+      
+  
+      await this.courseRepo.save(course);
+    } 
+    else {
+      course.name = dto.name;
+      course.description = dto.description ?? course.description;
+      await this.courseRepo.save(course);
+    }
+  
+    // 4️⃣ Vincular a carrera 
+    await this.linkCourseToCareer(dto.careerId, course.id);
+  
+    return {
+      success: true,
+      courseId: course.id,
+      careerId: dto.careerId,
+    };
+  }
+  
 }
