@@ -34,11 +34,5 @@ export class CareerController {
     return this.careerService.addCourse(careerId, courseId);
   }
 
-  @Post('core-event')
-  upsertFromCore(@Body() body: { id: string; name: string; description?: string }) {
-    return this.careerService.upsertFromCore(body);
-  }
-
-
   
 }
