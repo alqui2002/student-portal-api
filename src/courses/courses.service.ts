@@ -268,6 +268,10 @@ export class CoursesService {
     careerId: string;
     code: string;
   }) {
+    if (!dto.uuid || !dto.name || !dto.code || !dto.careerId) {
+      throw new BadRequestException('Invalid course payload from CORE');
+    }
+  
     let course = await this.courseRepo.findOne({
       where: { id: dto.uuid },
     });
@@ -276,20 +280,18 @@ export class CoursesService {
       course = this.courseRepo.create({
         id: dto.uuid,
         name: dto.name,
-        description: dto.description, 
+        description: dto.description,
         code: dto.code,
       });
-      
   
       await this.courseRepo.save(course);
-    } 
-    else {
+    } else {
       course.name = dto.name;
       course.description = dto.description ?? course.description;
+      course.code = dto.code;
       await this.courseRepo.save(course);
     }
   
-    // 4️⃣ Vincular a carrera 
     await this.linkCourseToCareer(dto.careerId, course.id);
   
     return {
@@ -298,5 +300,5 @@ export class CoursesService {
       careerId: dto.careerId,
     };
   }
-  
-}
+
+} 
