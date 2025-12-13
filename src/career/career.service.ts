@@ -89,5 +89,27 @@ export class CareerService {
       throw new Error("Error al sincronizar carreras del CORE");
     }
   }
+
+  async upsertFromCore(dto: { id: string; name: string; description?: string }) {
+    const existing = await this.careerRepo.findOne({
+      where: { id: dto.id },
+    });
+  
+    if (!existing) {
+      const career = this.careerRepo.create({
+        name: dto.name,
+        ...(dto.description ? { description: dto.description } : {}),
+      });
+      (career as any).id = dto.id;
+      
+      return this.careerRepo.save(career);
+          }
+  
+    existing.name = dto.name;
+    existing.description = dto.description ?? existing.description;
+  
+    return this.careerRepo.save(existing);
+  }
+  
   
 }  
