@@ -22,4 +22,15 @@ export class UserController {
   findUserCourses(@Param('id') id: string) {
     return this.userService.findUserWithCourses(String(id));
   }
+
+  @Post('core-event')
+  upsertFromCore(@Body() body: {
+    uuid: string;
+    name?: string;
+    email?: string;
+    careerId?: string | null;
+  }) {
+    return this.userService.upsertFromCore(body);
+  }
+
 }

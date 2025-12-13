@@ -42,7 +42,7 @@ export class UserService {
       id: createUserDto.uuid,
       name: createUserDto.name,
       email: createUserDto.email,
-      career, // ← undefined cuando no viene, PERFECTO
+      career, 
     });
   
     return this.usersRepository.save(newUser);
@@ -70,4 +70,42 @@ export class UserService {
       })),
     };
   }
+  async upsertFromCore(dto: {
+    uuid: string;
+    name?: string;
+    email?: string;
+    careerId?: string | null;
+  }) {
+    let user = await this.usersRepository.findOne({
+      where: { id: dto.uuid },
+      relations: ['career'],
+    });
+  
+    if (!user) {
+      // CREATE
+      user = this.usersRepository.create({
+        id: dto.uuid,
+        name: dto.name,
+        email: dto.email,
+      });
+    } else {
+      // UPDATE
+      if (dto.name) user.name = dto.name;
+      if (dto.email) user.email = dto.email;
+    }
+  
+    // career opcional
+    if (dto.careerId !== undefined) {
+      if (dto.careerId === null) {
+      } else {
+        const career = await this.careersRepository.findOne({
+          where: { id: dto.careerId },
+        });
+        if (career) user.career = career;
+      }
+    }
+  
+    return this.usersRepository.save(user);
+  }
+  
 }
