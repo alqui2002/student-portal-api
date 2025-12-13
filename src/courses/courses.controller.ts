@@ -43,6 +43,7 @@ export class CoursesController {
     name: string;
     description?: string;
     careerId: string;
+    code: string;
   }) {
     return this.coursesService.upsertFromCore(body);
   }

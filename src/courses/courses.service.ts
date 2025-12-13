@@ -266,6 +266,7 @@ export class CoursesService {
     name: string;
     description?: string;
     careerId: string;
+    code: string;
   }) {
     let course = await this.courseRepo.findOne({
       where: { id: dto.uuid },
@@ -276,6 +277,7 @@ export class CoursesService {
         id: dto.uuid,
         name: dto.name,
         description: dto.description, 
+        code: dto.code,
       });
       
   
