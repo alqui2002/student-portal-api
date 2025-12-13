@@ -9,8 +9,9 @@ export class Course {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
-  code?: string;
+  @Column({ unique: true, nullable: true })
+  code?: string | null;
+
 
   @Column()
   name: string;

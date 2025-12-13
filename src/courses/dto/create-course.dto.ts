@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsArray } from 'class-validator';
 export class CreateCourseDto {
   @IsOptional()
   @IsString()
-  code: string;
+  code?: string;
 
   @IsString()
   name: string;
