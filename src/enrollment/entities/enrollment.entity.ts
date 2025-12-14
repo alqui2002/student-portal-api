@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Course } from '../../courses/entities/course.entity';
 import { Commission } from '../../commission/entities/commission.entity';
@@ -7,6 +7,9 @@ import { Commission } from '../../commission/entities/commission.entity';
 export class Enrollment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  coreUuid: string;
 
   @ManyToOne(() => User, (user) => user.enrollments, { eager: false })
   @JoinColumn({ name: 'userId' })

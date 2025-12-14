@@ -67,7 +67,7 @@ export class EnrollmentsService {
     userId: string,
     commissionId: string,
     token: string,
-  ) {
+  ): Promise<string | null> {
     const endpoint = 'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones';
     
     const payload = {
@@ -79,7 +79,7 @@ export class EnrollmentsService {
 
     if (!token) {
       this.logger.warn(`⚠️  No se puede enviar inscripción a API externa: token no proporcionado`);
-      return;
+      return null;
     }
 
     try {
@@ -94,7 +94,9 @@ export class EnrollmentsService {
         })
       );
       
-      this.logger.log(`✅ Inscripción enviada exitosamente a API externa → ${endpoint}`);
+      const coreUuid = response.data?.uuid || null;
+      this.logger.log(`✅ Inscripción enviada exitosamente a API externa → ${endpoint}. Core UUID: ${coreUuid}`);
+      return coreUuid;
     } catch (err: any) {
       const errorMessage = err.response?.data 
         ? JSON.stringify(err.response.data)
@@ -104,22 +106,28 @@ export class EnrollmentsService {
       this.logger.error(`❌ Error enviando inscripción a API externa (${statusCode}): ${errorMessage}`);
       this.logger.error(`Payload enviado: ${JSON.stringify(payload)}`);
       // No lanzamos el error para no interrumpir el flujo principal
+      return null;
     }
   }
 
   private async deleteEnrollmentFromExternalAPI(
-    enrollmentId: string,
+    coreUuid: string,
     token: string,
   ) {
-    const endpoint = `https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones/${enrollmentId}`;
+    const endpoint = `https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones/${coreUuid}`;
 
     if (!token) {
       this.logger.warn(`⚠️  No se puede eliminar inscripción de API externa: token no proporcionado`);
       return;
     }
 
+    if (!coreUuid) {
+      this.logger.warn(`⚠️  No se puede eliminar inscripción de API externa: coreUuid no encontrado`);
+      return;
+    }
+
     try {
-      this.logger.log(`Eliminando inscripción de API externa: ${enrollmentId}`);
+      this.logger.log(`Eliminando inscripción de API externa: ${coreUuid}`);
       
       await lastValueFrom(
         this.httpService.delete(endpoint, {
@@ -137,7 +145,7 @@ export class EnrollmentsService {
       const statusCode = err.response?.status || 'N/A';
       
       this.logger.error(`❌ Error eliminando inscripción de API externa (${statusCode}): ${errorMessage}`);
-      this.logger.error(`Enrollment ID: ${enrollmentId}`);
+      this.logger.error(`Core UUID: ${coreUuid}`);
       // No lanzamos el error para no interrumpir el flujo principal
     }
   }
@@ -211,9 +219,13 @@ export class EnrollmentsService {
     await this.historyRepo.save(history);
     await this.gradesService.createInitial(user.id, commission.id);
 
-    // Enviar inscripción a API externa
+    // Enviar inscripción a API externa y guardar el coreUuid
     if (token) {
-      await this.sendEnrollmentToExternalAPI(userId, commissionId, token);
+      const coreUuid = await this.sendEnrollmentToExternalAPI(userId, commissionId, token);
+      if (coreUuid) {
+        enrollment.coreUuid = coreUuid;
+        await this.enrollmentRepo.save(enrollment);
+      }
     }
 
     return {
@@ -252,8 +264,10 @@ export class EnrollmentsService {
     if (!enrollment) throw new NotFoundException('Enrollment not found');
 
     // Eliminar inscripción de API externa antes de borrarla localmente
-    if (token) {
-      await this.deleteEnrollmentFromExternalAPI(enrollment.id, token);
+    if (token && enrollment.coreUuid) {
+      await this.deleteEnrollmentFromExternalAPI(enrollment.coreUuid, token);
+    } else if (token && !enrollment.coreUuid) {
+      this.logger.warn(`⚠️  No se puede eliminar inscripción de API externa: coreUuid no encontrado para enrollment ${enrollment.id}`);
     }
 
     enrollment.commission.availableSpots += 1;
