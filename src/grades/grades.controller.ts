@@ -11,7 +11,6 @@ import { GradesService } from './grades.service';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
-@UseGuards(ExternalJwtAuthGuard)
 @Controller('grades')
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
@@ -31,6 +30,7 @@ export class GradesController {
   }
 
   // 🔹 Lectura
+  @UseGuards(ExternalJwtAuthGuard)
   @Get('user/:userId/commission/:commissionId')
   getByUserAndCommission(
     @Param('userId') userId: string,
