@@ -2,8 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
-import { Notification } from './entities/notifications.entity';
+import { Notification, NotiType } from './entities/notifications.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
+import { EventType } from 'src/calendar/entities/calendar-event.entity';
+import { CoreNotificationDto } from './dto/core-notification.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -62,4 +64,49 @@ export class NotificationsService {
 
   return this.notificationRepo.save(notification);
 }
+async upsertFromCore(dto: CoreNotificationDto) {
+  const exists = await this.notificationRepo.findOne({
+    where: { id: dto.uuid },
+  });
+
+  if (exists) {
+    return {
+      success: true,
+      notificationId: exists.id,
+      skipped: true,
+    };
+  }
+
+  // 2️⃣ Validar usuario
+  const user = await this.userRepo.findOne({
+    where: { id: dto.user_uuid },
+  });
+
+  if (!user) {
+    throw new NotFoundException(
+      `User ${dto.user_uuid} not found for notification`,
+    );
+  }
+
+  // 3️⃣ Crear notificación
+  const notification = this.notificationRepo.create({
+    id: dto.uuid,
+    user,
+    title: dto.title,
+    type: NotiType.Event, // o el enum que uses
+    isRead: false,
+    createdAt: dto.created_at
+      ? new Date(dto.created_at)
+      : new Date(),
+  });
+
+  await this.notificationRepo.save(notification);
+
+  return {
+    success: true,
+    notificationId: notification.id,
+  };
+}
+
+
 }
