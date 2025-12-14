@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
+import { AttendanceFromCoreDto } from './entities/core-attendance.dto';
 
 @UseGuards(ExternalJwtAuthGuard)
 @Controller('commissions/:commissionId/attendances')
@@ -36,4 +37,10 @@ export class AttendanceController {
   getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);
   }
+
+  @Post('core-event')
+  upsertFromCore(@Body() dto: AttendanceFromCoreDto) {
+    return this.attendanceService.upsertFromCore(dto);
+  }
+
 }

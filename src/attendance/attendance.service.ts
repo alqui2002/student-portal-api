@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Attendance } from './entities/attendance.entity';
 import { User } from '../user/entities/user.entity';
 import { Commission } from '../commission/entities/commission.entity';
+import { AttendanceFromCoreDto } from './entities/core-attendance.dto';
 
 @Injectable()
 export class AttendanceService {
@@ -58,4 +59,51 @@ export class AttendanceService {
       order: { date: 'ASC' },
     });
   }
+  async upsertFromCore(dto: AttendanceFromCoreDto) {
+    const { studentId, courseId, date, status } = dto;
+  
+    // 1️⃣ Buscar usuario
+    const user = await this.userRepo.findOne({
+      where: { id: studentId },
+    });
+    if (!user) {
+      throw new NotFoundException(`User ${studentId} not found`);
+    }
+  
+    // 2️⃣ Buscar comisión
+    const commission = await this.commissionRepo.findOne({
+      where: { id: courseId },
+    });
+    if (!commission) {
+      throw new NotFoundException(`Commission ${courseId} not found`);
+    }
+  
+    // 3️⃣ Buscar asistencia existente (clave lógica)
+    let attendance = await this.attendanceRepo.findOne({
+      where: {
+        user: { id: user.id },
+        commission: { id: commission.id },
+        date,
+      },
+    });
+  
+    const present = status === 'P';
+  
+    // 4️⃣ Si existe → UPDATE
+    if (attendance) {
+      attendance.present = present;
+      return this.attendanceRepo.save(attendance);
+    }
+  
+    // 5️⃣ Si no existe → CREATE
+    attendance = this.attendanceRepo.create({
+      user,
+      commission,
+      date,
+      present,
+    });
+  
+    return this.attendanceRepo.save(attendance);
+  }
+  
 }
