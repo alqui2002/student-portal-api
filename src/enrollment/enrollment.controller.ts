@@ -1,4 +1,4 @@
-import { Controller, Post, Delete, Param, Body, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Post, Delete, Param, Body, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { EnrollmentsService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
@@ -14,8 +14,10 @@ export class EnrollmentsController {
     @Param('courseId') courseId: string,
     @Param('commissionId') commissionId: string,
     @Body('userId') userId: string,
+    @Req() req: any,
   ) {
-    return this.enrollmentsService.enroll({ userId, courseId, commissionId });
+    const token = req['rawToken'] || req.headers.authorization?.split(' ')[1];
+    return this.enrollmentsService.enroll({ userId, courseId, commissionId }, token);
   }
 
   @UseGuards(ExternalJwtAuthGuard)
@@ -47,5 +49,6 @@ export class EnrollmentsController {
     return this.enrollmentsService.upsertFromCore(dto);
   }
 
-  
+
 }
+

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
 import { CommissionService } from './commission.service';
 import { CreateCommissionDto } from './dto/create-commission.dto';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('courses/:courseId/commissions')
 export class CommissionController {
@@ -28,6 +29,16 @@ export class CommissionController {
   upsertFromCore(@Body() dto: any) {
     return this.commissionService.upsertFromCore(dto);
   }
+}
 
+@Controller('commissions')
+export class CommissionSyncController {
+  constructor(private readonly commissionService: CommissionService) {}
 
+  @Get('sync')
+  @UseGuards(ExternalJwtAuthGuard)
+  async syncCommissionsFromCore(@Req() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.commissionService.syncCommissionsFromCore(token);
+  }
 }

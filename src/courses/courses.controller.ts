@@ -27,12 +27,12 @@ export class CoursesController {
     return this.coursesService.findAll();
   }
 
-    @Get('sync')
-    @UseGuards(ExternalJwtAuthGuard)
-    async syncCousesFromCore(@Req() req) {
-      const token = req.headers.authorization?.split(' ')[1];
-      return this.coursesService.syncCousesFromCore(token);
-    }
+  @Get('sync')
+  @UseGuards(ExternalJwtAuthGuard)
+  async syncCousesFromCore(@Req() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.coursesService.syncCousesFromCore(token);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

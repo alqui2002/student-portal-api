@@ -63,7 +63,37 @@ export class EnrollmentsService {
     }
   }
 
-  async enroll(dto: CreateEnrollmentDto) {
+  private async sendEnrollmentToExternalAPI(
+    userId: string,
+    commissionId: string,
+    token: string,
+  ) {
+    const endpoint = 'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones';
+
+    const payload = {
+      uuid_curso: commissionId,
+      user_uuid: userId,
+      estado: 'pendiente',
+      rol: 'ALUMNO',
+    };
+
+    try {
+      await lastValueFrom(
+        this.httpService.post(endpoint, payload, {
+          headers: {
+            'authorization': `Bearer ${token}`,
+            'content-type': 'application/json',
+          },
+        })
+      );
+      this.logger.log(`Inscripción enviada a API externa → ${endpoint}`);
+    } catch (err) {
+      this.logger.error(`Error enviando inscripción a API externa: ${err.message}`);
+      // No lanzamos el error para no interrumpir el flujo principal
+    }
+  }
+
+  async enroll(dto: CreateEnrollmentDto, token?: string) {
     const { userId, courseId, commissionId } = dto;
 
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -131,8 +161,11 @@ export class EnrollmentsService {
     });
     await this.historyRepo.save(history);
     await this.gradesService.createInitial(user.id, commission.id);
-    await this.sendEnrollmentEventToHub(dto.userId, dto.courseId, dto.commissionId, 'update');
 
+    // Enviar inscripción a API externa
+    if (token) {
+      await this.sendEnrollmentToExternalAPI(userId, commissionId, token);
+    }
 
     return {
       message: 'Enrollment successful and academic history record created',
@@ -273,15 +306,15 @@ export class EnrollmentsService {
   }) {
     const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     if (!user) throw new NotFoundException(`User ${dto.userId} not found`);
-  
+
     const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
     if (!course) throw new NotFoundException(`Course ${dto.courseId} not found`);
-  
+
     let enrollment = await this.enrollmentRepo.findOne({
       where: { id: dto.uuid },
       relations: ['user', 'course'],
     });
-  
+
     if (!enrollment) {
       enrollment = this.enrollmentRepo.create({
         id: dto.uuid,
@@ -290,12 +323,12 @@ export class EnrollmentsService {
       });
       await this.enrollmentRepo.save(enrollment);
     }
-  
+
     // 👇 lógica especial para DOCENTE
     if (dto.role === 'teacher') {
       await this.assignProfessorToCommission(user, course);
     }
-  
+
     return { success: true };
   }
 
@@ -304,16 +337,14 @@ export class EnrollmentsService {
       where: { course: { id: course.id } },
       relations: ['course'],
     });
-  
+
     if (!commission) return;
-  
+
     commission.professorName =
       `${user.name ?? ''}`.trim() || 'Profesor asignado';
-  
+
     await this.commissionRepo.save(commission);
   }
-  
-  
-  
-  
+
 }
+
