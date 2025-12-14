@@ -13,6 +13,10 @@ export class DinningReservation {
   @PrimaryColumn('uuid')
   id: string;
 
+  @Column({ type: 'int', nullable: true })
+  reservationId: number | null;
+
+
   @Column({ name: 'userId', type: 'uuid', nullable: true })
   userId?: string;
 
@@ -20,8 +24,9 @@ export class DinningReservation {
   @JoinColumn({ name: 'userId' })
   user?: User;
 
-  @Column({ type: 'varchar', length: 100 })
-  locationId: string;
+  @Column({ type: 'int' })
+  locationId: number;
+
 
   @Column({ type: 'varchar', length: 50 })
   mealTime: string;

@@ -13,7 +13,7 @@ export class DinningController {
     return this.dinningService.findAll();
   }
 
-  @UseGuards(ExternalJwtAuthGuard)
+  //@UseGuards(ExternalJwtAuthGuard)
   @Get('user/:userId')
   findByUser(@Param('userId') userId: string) {
     return this.dinningService.findByUser(userId);

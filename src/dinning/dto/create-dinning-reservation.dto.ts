@@ -25,20 +25,20 @@ class SlotTimeDto {
 
 export class CreateDinningReservationDto {
   @IsOptional()
-  @Transform(({ value }) => (value === null || value === undefined ? undefined : String(value)))
-  reservationId?: string;
+  @IsNumber()
+  @Transform(({ value }) =>
+    value === null || value === undefined ? undefined : Number(value)
+  )
+  reservationId?: number;
 
   @IsUUID()
   @IsOptional()
   userId?: string;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  @Transform(({ value }) => {
-    if (value === null || value === undefined) return value;
-    return String(value);
-  })
-  locationId: string;
+  @Transform(({ value }) => Number(value))
+  locationId: number;
 
   @IsString()
   @IsNotEmpty()

@@ -12,9 +12,14 @@ export class DinningService {
   constructor(
     @InjectRepository(DinningReservation)
     private readonly dinningRepository: Repository<DinningReservation>,
+
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  // ---------------------------------------------------------------------------
+  // BASIC GETTERS
+  // ---------------------------------------------------------------------------
 
   findAll() {
     return this.dinningRepository.find({ relations: ['user'] });
@@ -25,7 +30,11 @@ export class DinningService {
       where: { id },
       relations: ['user'],
     });
-    if (!reservation) throw new NotFoundException('Reservation not found');
+
+    if (!reservation) {
+      throw new NotFoundException('Reservation not found');
+    }
+
     return reservation;
   }
 
@@ -46,10 +55,35 @@ export class DinningService {
     return reservations;
   }
 
+  /**
+   * Útil si mañana llegan eventos externos de "reservation.updated"
+   * y solo te pasan reservationId y no tu UUID interno.
+   */
+  async findByReservationId(reservationId: number) {
+    const reservation = await this.dinningRepository.findOne({
+      where: { reservationId },
+      relations: ['user'],
+    });
+
+    if (!reservation) {
+      throw new NotFoundException(
+        `Reservation with reservationId ${reservationId} not found`,
+      );
+    }
+
+    return reservation;
+  }
+
+  // ---------------------------------------------------------------------------
+  // CREATE
+  // ---------------------------------------------------------------------------
+
   async create(dto: CreateDinningReservationDto) {
     const { userId, reservationId, ...rest } = dto;
+
     const reservation = this.dinningRepository.create({
       id: uuidv4(),
+      reservationId: reservationId ?? null,
       locationId: rest.locationId,
       mealTime: rest.mealTime,
       reservationTimeSlot: rest.reservationTimeSlot ?? null,
@@ -73,10 +107,19 @@ export class DinningService {
     return this.dinningRepository.save(reservation);
   }
 
+  // ---------------------------------------------------------------------------
+  // UPDATE
+  // ---------------------------------------------------------------------------
+
   async update(id: string, dto: UpdateDinningReservationDto) {
     const reservation = await this.findOne(id);
+
     const { reservationId, ...data } = dto;
     Object.assign(reservation, data);
+
+    if (reservationId !== undefined) {
+      reservation.reservationId = reservationId;
+    }
 
     if (dto.reservationDate) {
       reservation.reservationDate = dto.reservationDate;
@@ -107,9 +150,14 @@ export class DinningService {
     return this.dinningRepository.save(reservation);
   }
 
+  // ---------------------------------------------------------------------------
+  // DELETE
+  // ---------------------------------------------------------------------------
+
   async remove(id: string) {
     const reservation = await this.findOne(id);
     await this.dinningRepository.remove(reservation);
+
     return { message: 'Reservation removed successfully' };
   }
 }
