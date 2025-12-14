@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { NotiType} from '../entities/notifications.entity';
 
 export class CreateNotificationDto {
@@ -12,6 +12,7 @@ export class CreateNotificationDto {
   title: string;
 
   @IsString()
+  @IsOptional()
   @IsNotEmpty()
   message: string;
 
