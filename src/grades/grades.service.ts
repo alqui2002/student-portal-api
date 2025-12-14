@@ -102,29 +102,20 @@ export class GradesService {
             finalExam: grade.finalExam,
             status: grade.status,
         };
-    }
-    async upsertGrade(
+    }async upsertGrade(
         userId: string,
         commissionId: string,
         dto: UpdateGradeDto,
       ) {
-        // 1️⃣ Buscar usuario
-        const user = await this.userRepo.findOne({
-          where: { id: userId },
-        });
-        if (!user) {
-          throw new NotFoundException(`User ${userId} not found`);
-        }
+        const user = await this.userRepo.findOne({ where: { id: userId } });
+        if (!user) throw new NotFoundException(`User ${userId} not found`);
       
-        // 2️⃣ Buscar comisión
         const commission = await this.commissionRepo.findOne({
           where: { id: commissionId },
         });
-        if (!commission) {
+        if (!commission)
           throw new NotFoundException(`Commission ${commissionId} not found`);
-        }
       
-        // 3️⃣ Buscar grade existente (clave lógica)
         let grade = await this.gradeRepo.findOne({
           where: {
             user: { id: userId },
@@ -132,20 +123,27 @@ export class GradesService {
           },
         });
       
-        // 4️⃣ Si NO existe → CREATE
+        // 🔹 calcular status automático si viene finalExam
+        const status =
+          dto.finalExam !== undefined
+            ? dto.finalExam >= 4
+              ? 'passed'
+              : 'failed'
+            : dto.status ?? 'in_progress';
+      
         if (!grade) {
           grade = this.gradeRepo.create({
             user,
             commission,
-            ...dto, // firstExam / secondExam / finalExam
-            status: dto.status ?? 'in_progress',
+            ...dto,
+            status,
           });
       
           return this.gradeRepo.save(grade);
         }
       
-        // 5️⃣ Si existe → UPDATE parcial
         Object.assign(grade, dto);
+        grade.status = status;
       
         return this.gradeRepo.save(grade);
       }

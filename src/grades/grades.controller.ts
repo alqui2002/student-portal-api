@@ -35,12 +35,10 @@ export class GradesController {
     @Param('commissionId') commissionId: string,
     @Body() dto: UpdateGradeDto,
   ) {
-    return this.gradesService.upsertGrade(
-      userId,
-      commissionId,
-      dto,
-    );
+    return this.gradesService.upsertGrade(userId, commissionId, dto);
   }
+  
+  
 
 
 
