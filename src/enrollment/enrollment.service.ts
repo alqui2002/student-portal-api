@@ -107,6 +107,41 @@ export class EnrollmentsService {
     }
   }
 
+  private async deleteEnrollmentFromExternalAPI(
+    enrollmentId: string,
+    token: string,
+  ) {
+    const endpoint = `https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones/${enrollmentId}`;
+
+    if (!token) {
+      this.logger.warn(`⚠️  No se puede eliminar inscripción de API externa: token no proporcionado`);
+      return;
+    }
+
+    try {
+      this.logger.log(`Eliminando inscripción de API externa: ${enrollmentId}`);
+      
+      await lastValueFrom(
+        this.httpService.delete(endpoint, {
+          headers: {
+            'authorization': `Bearer ${token}`,
+          },
+        })
+      );
+      
+      this.logger.log(`✅ Inscripción eliminada exitosamente de API externa → ${endpoint}`);
+    } catch (err: any) {
+      const errorMessage = err.response?.data 
+        ? JSON.stringify(err.response.data)
+        : err.message;
+      const statusCode = err.response?.status || 'N/A';
+      
+      this.logger.error(`❌ Error eliminando inscripción de API externa (${statusCode}): ${errorMessage}`);
+      this.logger.error(`Enrollment ID: ${enrollmentId}`);
+      // No lanzamos el error para no interrumpir el flujo principal
+    }
+  }
+
   async enroll(dto: CreateEnrollmentDto, token?: string) {
     const { userId, courseId, commissionId } = dto;
 
@@ -208,13 +243,18 @@ export class EnrollmentsService {
   }
 
 
-  async withdraw(userId: string, commissionId: string) {
+  async withdraw(userId: string, commissionId: string, token?: string) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId } },
       relations: ['commission', 'course'],
     });
 
     if (!enrollment) throw new NotFoundException('Enrollment not found');
+
+    // Eliminar inscripción de API externa antes de borrarla localmente
+    if (token) {
+      await this.deleteEnrollmentFromExternalAPI(enrollment.id, token);
+    }
 
     enrollment.commission.availableSpots += 1;
     await this.commissionRepo.save(enrollment.commission);

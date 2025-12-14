@@ -26,8 +26,10 @@ export class EnrollmentsController {
     @Param('courseId') courseId: string,
     @Param('commissionId') commissionId: string,
     @Body('userId') userId: string,
+    @Req() req: any,
   ) {
-    return this.enrollmentsService.withdraw(userId, commissionId);
+    const token = req['rawToken'] || req.headers.authorization?.split(' ')[1];
+    return this.enrollmentsService.withdraw(userId, commissionId, token);
   }
 
   @UseGuards(ExternalJwtAuthGuard)
