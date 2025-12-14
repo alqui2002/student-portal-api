@@ -2,6 +2,7 @@ import { Controller, Post, Delete, Param, Body, Get, Query, UseGuards } from '@n
 import { EnrollmentsService } from './enrollment.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
+import { CoreEnrollmentDto } from './dto/core-enrollment.dto';
 
 @Controller('enrollments')
 export class EnrollmentsController {
@@ -41,4 +42,10 @@ export class EnrollmentsController {
   ) {
     return this.enrollmentsService.findEnrollmentDetail(userId, commissionId);
   }
+  @Post('core-event')
+  upsertFromCore(@Body() dto: CoreEnrollmentDto) {
+    return this.enrollmentsService.upsertFromCore(dto);
+  }
+
+  
 }

@@ -12,6 +12,7 @@ export class TransactionService {
   ) {}
 
   async processCoreEvent(event: CoreTransactionDto) {
+    console.log('Processing core event:', event);
     const exists = await this.purchaseRepo.findOne({
       where: { id: event.uuid },
     });

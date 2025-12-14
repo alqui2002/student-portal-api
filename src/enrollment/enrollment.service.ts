@@ -264,4 +264,56 @@ export class EnrollmentsService {
         : null,
     };
   }
+
+  async upsertFromCore(dto: {
+    uuid: string;
+    userId: string;
+    courseId: string;
+    role: string;
+  }) {
+    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
+    if (!user) throw new NotFoundException(`User ${dto.userId} not found`);
+  
+    const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
+    if (!course) throw new NotFoundException(`Course ${dto.courseId} not found`);
+  
+    let enrollment = await this.enrollmentRepo.findOne({
+      where: { id: dto.uuid },
+      relations: ['user', 'course'],
+    });
+  
+    if (!enrollment) {
+      enrollment = this.enrollmentRepo.create({
+        id: dto.uuid,
+        user,
+        course,
+      });
+      await this.enrollmentRepo.save(enrollment);
+    }
+  
+    // 👇 lógica especial para DOCENTE
+    if (dto.role === 'teacher') {
+      await this.assignProfessorToCommission(user, course);
+    }
+  
+    return { success: true };
+  }
+
+  private async assignProfessorToCommission(user: User, course: Course) {
+    const commission = await this.commissionRepo.findOne({
+      where: { course: { id: course.id } },
+      relations: ['course'],
+    });
+  
+    if (!commission) return;
+  
+    commission.professorName =
+      `${user.name ?? ''}`.trim() || 'Profesor asignado';
+  
+    await this.commissionRepo.save(commission);
+  }
+  
+  
+  
+  
 }

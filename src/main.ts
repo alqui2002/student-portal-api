@@ -10,6 +10,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       "http://localhost:3002",
+      "http://localhost:3000",
       "https://student-portal-front-production.up.railway.app",
     ],    
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

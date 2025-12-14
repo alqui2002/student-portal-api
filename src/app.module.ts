@@ -15,6 +15,7 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { AuthModule } from './auth/auth.module';
 import { AcademicHistoryModule } from './academic-history/academic-history.module';
 import { DinningModule } from './dinning/dinning.module';
+import { TransactionModule } from './transactions/transaction.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -32,6 +33,8 @@ import { DinningModule } from './dinning/dinning.module';
     AttendanceModule,
     AuthModule,
     DinningModule,
+    TransactionModule,
+
   ],
 })
 export class AppModule {}
