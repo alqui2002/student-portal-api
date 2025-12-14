@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException, Req } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
@@ -26,6 +26,13 @@ export class CoursesController {
 
     return this.coursesService.findAll();
   }
+
+    @Get('sync')
+    @UseGuards(ExternalJwtAuthGuard)
+    async syncCousesFromCore(@Req() req) {
+      const token = req.headers.authorization?.split(' ')[1];
+      return this.coursesService.syncCousesFromCore(token);
+    }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

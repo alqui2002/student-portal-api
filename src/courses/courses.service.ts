@@ -9,6 +9,10 @@ import { Repository, In } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { User } from '../user/entities/user.entity';
 import { Career } from 'src/career/entities/career.entity';
+import axios from 'axios';
+
+const CORE_API_BASE_URL =
+  'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api';
 
 @Injectable()
 export class CoursesService {
@@ -300,5 +304,132 @@ export class CoursesService {
       careerId: dto.careerId,
     };
   }
+  async syncCousesFromCore(token: string) {
+    try {
+      const materias = await this.fetchMateriasFromCore(token);
+      let inserted = 0;
+      let updated = 0;
 
-} 
+      for (const materia of materias) {
+        const correlatives = await this.fetchCorrelativesFromCore(
+          token,
+          materia.uuid,
+        );
+
+        const payload = this.mapCoreMateriaToCourse(materia, correlatives);
+
+        const existing = await this.courseRepo.findOne({
+          where: { id: payload.id },
+        });
+
+        if (!existing) {
+          const course = this.courseRepo.create(payload);
+          await this.courseRepo.save(course);
+          inserted++;
+        } else {
+          existing.name = payload.name;
+          existing.description = payload.description;
+          existing.code = payload.code;
+          existing.correlates = payload.correlates;
+          await this.courseRepo.save(existing);
+          updated++;
+        }
+
+        const careerId =
+          materia.uuid_carrera ||
+          materia.careerId ||
+          materia.carrera?.uuid ||
+          null;
+
+        if (careerId) {
+          try {
+            await this.linkCourseToCareer(careerId, payload.id);
+          } catch (linkError) {
+            console.error(
+              `No se pudo vincular la carrera ${careerId} con la materia ${payload.id}`,
+              linkError instanceof Error ? linkError.message : linkError,
+            );
+          }
+        }
+      }
+
+      return {
+        success: true,
+        totalReceived: materias.length,
+        inserted,
+        updated,
+      };
+    } catch (err) {
+      console.error('Error sincronizando materias desde el CORE', err);
+      throw new Error('Error al sincronizar carreras del CORE');
+    }
+  }
+
+  private async fetchMateriasFromCore(token: string): Promise<any[]> {
+    const response = await axios.get(`${CORE_API_BASE_URL}/materias`, {
+      headers: this.buildCoreHeaders(token),
+    });
+
+    const materias = response.data?.data;
+    return Array.isArray(materias) ? materias : [];
+  }
+
+  private async fetchCorrelativesFromCore(
+    token: string,
+    materiaId: string,
+  ): Promise<string[]> {
+    if (!materiaId) return [];
+
+    try {
+      const response = await axios.get(
+        `${CORE_API_BASE_URL}/materias/${materiaId}/correlativas`,
+        {
+          headers: this.buildCoreHeaders(token),
+        },
+      );
+
+      const correlatives = response.data?.data ?? [];
+      return correlatives
+        .map((corr) => corr?.uuid_materia_correlativa)
+        .filter((id): id is string => typeof id === 'string');
+    } catch (error) {
+      console.error(
+        `No se pudieron obtener correlativas para la materia ${materiaId}`,
+        error instanceof Error ? error.message : error,
+      );
+      return [];
+    }
+  }
+
+  private mapCoreMateriaToCourse(
+    materia: any,
+    correlatives: string[],
+  ): {
+    id: string;
+    name: string;
+    description?: string;
+    code: string;
+    correlates: string[];
+  } {
+    const code = materia?.code || materia?.codigo || materia?.uuid;
+
+    return {
+      id: materia.uuid,
+      name: materia.nombre || materia.name || materia.uuid,
+      description:
+        materia.description === null || materia.description === undefined
+          ? undefined
+          : materia.description,
+      code,
+      correlates: Array.isArray(correlatives) ? correlatives : [],
+    };
+  }
+
+  private buildCoreHeaders(token: string): Record<string, string> {
+    return {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
+}
