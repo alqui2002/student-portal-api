@@ -56,4 +56,56 @@ export class CommissionService {
     const commission = this.commissionRepo.create({ ...dto, course });
     return this.commissionRepo.save(commission);
   }
+
+  async upsertFromCore(dto: {
+    uuid: string;
+    courseId: string;
+    days?: string;
+    startTime?: string;
+    endTime?: string;
+    shift?: string;
+    classRoom?: string;
+    professorName?: string;
+    availableSpots?: number;
+    totalSpots?: number;
+    mode?: string;
+    price?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    // 1️⃣ validar materia
+    const course = await this.courseRepo.findOne({
+      where: { id: dto.courseId },
+    });
+  
+    if (!course) {
+      throw new NotFoundException(
+        `Course ${dto.courseId} not found. Materia debe existir antes de la comisión.`,
+      );
+    }
+  
+    // 2️⃣ buscar comisión
+    let commission = await this.commissionRepo.findOne({
+      where: { id: dto.uuid },
+      relations: ['course'],
+    });
+  
+    // 3️⃣ crear si no existe
+    if (!commission) {
+      commission = this.commissionRepo.create({
+        id: dto.uuid,
+        course,
+      });
+    }
+
+  
+    await this.commissionRepo.save(commission);
+  
+    return {
+      success: true,
+      commissionId: commission.id,
+      courseId: course.id,
+    };
+  }
+  
 }

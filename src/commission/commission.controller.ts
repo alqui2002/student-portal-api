@@ -24,4 +24,10 @@ export class CommissionController {
     return this.commissionService.findByCourseWithStatus(courseId, status);
   }
 
+  @Post('core-event')
+  upsertFromCore(@Body() dto: any) {
+    return this.commissionService.upsertFromCore(dto);
+  }
+
+
 }
