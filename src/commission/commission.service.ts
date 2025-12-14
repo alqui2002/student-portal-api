@@ -56,23 +56,30 @@ export class CommissionService {
     const commission = this.commissionRepo.create({ ...dto, course });
     return this.commissionRepo.save(commission);
   }
-
   async upsertFromCore(dto: {
-    uuid: string;
-    courseId: string;
-    day?: string;
-    startTime?: string;
-    endTime?: string;
-    shift?: string;
-    classRoom?: string;
-    professorName?: string;
-    availableSpots?: number;
-    totalSpots?: number;
-    mode?: string;
-    price?: string;
-    startDate?: string;
-    endDate?: string;
-  }) {
+      uuid: string;
+      courseId: string;
+    
+      days: string;
+    
+      startTime: string;
+      endTime: string;
+    
+      shift: 'morning' | 'afternoon' | 'night';
+      mode: 'virtual' | 'in person';
+    
+      classRoom: string;
+      professorName: string;
+    
+      availableSpots: number;
+      totalSpots: number;
+    
+      price: string;
+    
+      startDate: string;
+      endDate: string;
+    }) {
+    
     // 1️⃣ validar materia
     const course = await this.courseRepo.findOne({
       where: { id: dto.courseId },
@@ -80,7 +87,7 @@ export class CommissionService {
   
     if (!course) {
       throw new NotFoundException(
-        `Course ${dto.courseId} not found. Materia debe existir antes de la comisión.`,
+        `Course ${dto.courseId} not found`,
       );
     }
   
@@ -97,7 +104,20 @@ export class CommissionService {
         course,
       });
     }
-
+  
+    // ✅ 4️⃣ ASIGNAR CAMPOS (ESTO FALTABA)
+    commission.days = dto.days;
+    commission.startTime = dto.startTime;
+    commission.endTime = dto.endTime;
+    commission.shift = dto.shift;
+    commission.classRoom = dto.classRoom;
+    commission.professorName = dto.professorName;
+    commission.availableSpots = dto.availableSpots;
+    commission.totalSpots = dto.totalSpots;
+    commission.mode = dto.mode;
+    commission.price = dto.price;
+    commission.startDate = dto.startDate;
+    commission.endDate = dto.endDate;
   
     await this.commissionRepo.save(commission);
   
