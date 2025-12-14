@@ -73,7 +73,7 @@ export class EnrollmentsService {
     const payload = {
       uuid_curso: commissionId,
       user_uuid: userId,
-      estado: 'pendiente',
+      estado: 'CONFIRMADO',
       rol: 'ALUMNO',
     };
 
