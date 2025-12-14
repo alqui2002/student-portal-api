@@ -7,6 +7,11 @@ import { AttendanceFromCoreDto } from './entities/core-attendance.dto';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @Post('core-event')
+  upsertFromCore(@Body() dto: AttendanceFromCoreDto) {
+    return this.attendanceService.upsertFromCore(dto);
+  }
+
   @Post(':userId')
   markAttendance(
     @Param('commissionId') commissionId: string,
@@ -38,9 +43,6 @@ export class AttendanceController {
     return this.attendanceService.getCommissionAttendance(commissionId);
   }
 
-  @Post('core-event')
-  upsertFromCore(@Body() dto: AttendanceFromCoreDto) {
-    return this.attendanceService.upsertFromCore(dto);
-  }
+ 
 
 }
