@@ -27,4 +27,17 @@ export class GradesController {
   ) {
     return this.gradesService.updateGrade(userId, commissionId, dto);
   }
+
+  @Patch('user/:userId/commission/:commissionId')
+  upsertGrade(
+    @Param('userId') userId: string,
+    @Param('commissionId') commissionId: string,
+    @Body() dto: UpdateGradeDto,
+  ) {
+    return this.gradesService.upsertGrade(
+      userId,
+      commissionId,
+      dto,
+    );
+  }
 }

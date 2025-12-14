@@ -103,4 +103,40 @@ export class GradesService {
             status: grade.status,
         };
     }
+
+    async upsertGrade(
+        userId: string,
+        commissionId: string,
+        dto: UpdateGradeDto,
+      ) {
+        const grade = await this.gradeRepo.findOne({
+          where: {
+            user: { id: userId },
+            commission: { id: commissionId },
+          },
+        });
+      
+        if (grade) {
+          Object.assign(grade, dto);
+          return this.gradeRepo.save(grade);
+        }
+      
+        const user = await this.userRepo.findOne({ where: { id: userId } });
+        const commission = await this.commissionRepo.findOne({
+          where: { id: commissionId },
+        });
+      
+        if (!user || !commission) {
+          throw new NotFoundException('User or commission not found');
+        }
+      
+        const newGrade = this.gradeRepo.create({
+          user,
+          commission,
+          ...dto,
+        });
+      
+        return this.gradeRepo.save(newGrade);
+      }
+      
 }
