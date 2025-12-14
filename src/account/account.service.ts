@@ -42,7 +42,7 @@ export class AccountService {
         'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers',
         {
           from: 'SYSTEM',
-          to: user.id,
+          to: account.id,
           currency: 'ARG',
           amount: amountNumber,
           type: 'credit',
