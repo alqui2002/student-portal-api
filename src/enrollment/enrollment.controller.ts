@@ -47,10 +47,10 @@ export class EnrollmentsController {
     return this.enrollmentsService.findEnrollmentDetail(userId, commissionId);
   }
   @Post('core-event')
-  upsertFromCore(@Body() dto: CoreEnrollmentDto) {
-    return this.enrollmentsService.upsertFromCore(dto);
-  }
-
-
+  async upsertFromCore(@Body() payload: any) {
+    console.log(
+      `📨 Enrollment core-event → ${JSON.stringify(payload)}`,
+    );
+  } 
 }
 

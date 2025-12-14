@@ -369,50 +369,66 @@ export class EnrollmentsService {
   async upsertFromCore(dto: {
     uuid: string;
     userId: string;
-    courseId: string;
+    courseId: string;       // MATERIA (Course.id)
+    commissionId: string;   // COMISION (Commission.id)
     role: string;
+    status?: string;
   }) {
     const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     if (!user) throw new NotFoundException(`User ${dto.userId} not found`);
-
+  
     const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
     if (!course) throw new NotFoundException(`Course ${dto.courseId} not found`);
-
+  
+    const commission = await this.commissionRepo.findOne({
+      where: { id: dto.commissionId },
+      relations: ['course'],
+    });
+    if (!commission) {
+      throw new NotFoundException(`Commission ${dto.commissionId} not found`);
+    }
+  
+    // opcional: asegurar consistencia (comisión pertenece a la materia)
+    if (commission.course?.id && commission.course.id !== course.id) {
+      throw new BadRequestException(
+        `Commission ${commission.id} does not belong to course ${course.id}`,
+      );
+    }
+  
     let enrollment = await this.enrollmentRepo.findOne({
       where: { id: dto.uuid },
-      relations: ['user', 'course'],
+      relations: ['user', 'course', 'commission'],
     });
-
+  
     if (!enrollment) {
       enrollment = this.enrollmentRepo.create({
         id: dto.uuid,
         user,
         course,
+        commission,
       });
-      await this.enrollmentRepo.save(enrollment);
+    } else {
+      enrollment.user = user;
+      enrollment.course = course;
+      enrollment.commission = commission;
     }
-
-    // 👇 lógica especial para DOCENTE
+  
+    await this.enrollmentRepo.save(enrollment);
+  
+    // DOCENTE => asignar profesor a ESA comisión
     if (dto.role === 'teacher') {
-      await this.assignProfessorToCommission(user, course);
+      await this.assignProfessorToCommission(user, commission);
     }
-
+  
     return { success: true };
   }
+  
 
-  private async assignProfessorToCommission(user: User, course: Course) {
-    const commission = await this.commissionRepo.findOne({
-      where: { course: { id: course.id } },
-      relations: ['course'],
-    });
-
-    if (!commission) return;
-
-    commission.professorName =
-      `${user.name ?? ''}`.trim() || 'Profesor asignado';
-
+  private async assignProfessorToCommission(user: User, commission: Commission) {
+    commission.professorName = `${user.name ?? ''}`.trim() || 'Profesor asignado';
     await this.commissionRepo.save(commission);
   }
+  
 
 }
 
