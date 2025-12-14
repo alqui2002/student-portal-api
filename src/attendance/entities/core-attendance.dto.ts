@@ -1,7 +1,15 @@
+import { IsUUID, IsString, IsIn } from 'class-validator';
+
 export class AttendanceFromCoreDto {
-    studentId: string;
-    courseId: string;
-    date: string;
-    status: 'P' | 'A' | 'M';
-  }
-  
+  @IsUUID()
+  studentId: string;
+
+  @IsUUID()
+  courseId: string;
+
+  @IsString()
+  date: string; // YYYY-MM-DD
+
+  @IsIn(['P', 'A', 'M'])
+  status: 'P' | 'A' | 'M';
+}
