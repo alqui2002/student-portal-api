@@ -95,6 +95,7 @@ async upsertFromCore(dto: CoreNotificationDto) {
     title: dto.title,
     type: NotiType.Event, // o el enum que uses
     isRead: false,
+    message: dto.title, 
     createdAt: dto.created_at
       ? new Date(dto.created_at)
       : new Date(),
