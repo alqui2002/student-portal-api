@@ -96,7 +96,7 @@ async upsertFromCore(dto: CoreNotificationDto) {
     id: dto.uuid,
     user,
     title: dto.title,
-    type: NotiType.INFO,
+    type: NotiType.Event,
     isRead: false,
     createdAt: dto.created_at
       ? new Date(dto.created_at)
