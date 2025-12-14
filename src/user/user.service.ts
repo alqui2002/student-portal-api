@@ -42,7 +42,7 @@ export class UserService {
       id: createUserDto.uuid,
       name: createUserDto.name,
       email: createUserDto.email,
-      career: createUserDto.careerId ? career : undefined, 
+      career: career, 
     });
   
     return this.usersRepository.save(newUser);
@@ -87,6 +87,7 @@ export class UserService {
         id: dto.uuid,
         name: dto.name,
         email: dto.email,
+
       });
     } else {
       // UPDATE

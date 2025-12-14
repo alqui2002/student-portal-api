@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards } from '@ne
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
-import { CoreNotificationDto } from './dto/core-notification.dto';
 
 @Controller('/notifications')
 export class NotificationsController {
@@ -33,10 +32,4 @@ export class NotificationsController {
   ) {
     return this.notificationsService.update(id, body);
   }
-
-  @Post('core-event')
-  upsertFromCore(@Body() dto: CoreNotificationDto) {
-    return this.notificationsService.upsertFromCore(dto);
-  }
-
 }
