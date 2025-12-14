@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Commission } from './entities/commission.entity';
@@ -8,6 +8,8 @@ import axios from 'axios';
 
 @Injectable()
 export class CommissionService {
+  private readonly logger = new Logger(CommissionService.name);
+
   constructor(
     @InjectRepository(Commission)
     private commissionRepo: Repository<Commission>,
@@ -145,8 +147,23 @@ export class CommissionService {
     return 'in person'; // default
   }
 
+  private getTimesByShift(shift: 'morning' | 'afternoon' | 'night'): { startTime: string; endTime: string } {
+    switch (shift) {
+      case 'morning':
+        return { startTime: '08:00', endTime: '12:00' };
+      case 'afternoon':
+        return { startTime: '14:00', endTime: '18:00' };
+      case 'night':
+        return { startTime: '18:30', endTime: '22:00' };
+      default:
+        return { startTime: '14:00', endTime: '18:00' }; // default afternoon
+    }
+  }
+
   async syncCommissionsFromCore(token: string) {
     try {
+      this.logger.log('Iniciando sincronización de comisiones desde CORE...');
+      
       // 1) Llamo al CORE
       const response = await axios.get(
         'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/cursos',
@@ -156,6 +173,7 @@ export class CommissionService {
       );
 
       const commissions = response.data?.data ?? [];
+      this.logger.log(`Comisiones recibidas del CORE: ${commissions.length}`);
 
       let inserted = 0;
       let updated = 0;
@@ -169,6 +187,7 @@ export class CommissionService {
 
         if (!course) {
           skipped++;
+          this.logger.warn(`⏭️  Comisión ${c.uuid} (${c.comision}) SKIP - Course ${c.uuid_materia} no encontrado`);
           continue; // Skip si no existe el course
         }
 
@@ -180,6 +199,7 @@ export class CommissionService {
         // Mapear campos del API de core a la entidad Commission
         const shift = this.mapShiftFromCore(c.turno);
         const mode = this.mapModeFromCore(c.modalidad);
+        const { startTime, endTime } = this.getTimesByShift(shift);
         
         // Calcular availableSpots: si existe, mantener el actual, sino usar totalSpots
         const totalSpots = c.cantidad_max || 0;
@@ -202,8 +222,8 @@ export class CommissionService {
             id: c.uuid,
             course,
             days: c.dia || 'LUNES',
-            startTime: '08:00', // Default, no viene en el API
-            endTime: '12:00', // Default, no viene en el API
+            startTime,
+            endTime,
             shift,
             classRoom,
             professorName: 'Sin profesor asignado', // No viene en el API de core
@@ -217,11 +237,14 @@ export class CommissionService {
 
           await this.commissionRepo.save(newCommission);
           inserted++;
+          this.logger.log(`✅ INSERTADA - Comisión ${c.uuid} (${c.comision}) - Course: ${course.name} - Turno: ${c.turno} - Modalidad: ${c.modalidad}`);
         } else {
           // Actualizar comisión existente (solo si está activa)
           if (c.estado === 'activo') {
             exists.days = c.dia || exists.days;
             exists.shift = shift;
+            exists.startTime = startTime;
+            exists.endTime = endTime;
             exists.classRoom = classRoom;
             exists.totalSpots = totalSpots;
             exists.mode = mode;
@@ -235,9 +258,14 @@ export class CommissionService {
 
             await this.commissionRepo.save(exists);
             updated++;
+            this.logger.log(`🔄 ACTUALIZADA - Comisión ${c.uuid} (${c.comision}) - Course: ${course.name} - Estado: ${c.estado}`);
+          } else {
+            this.logger.log(`⏸️  Comisión ${c.uuid} (${c.comision}) OMITIDA - Estado: ${c.estado} (solo se actualizan las activas)`);
           }
         }
       }
+
+      this.logger.log(`📊 Resumen de sincronización: ${inserted} insertadas, ${updated} actualizadas, ${skipped} omitidas de ${commissions.length} totales`);
 
       return {
         success: true,
@@ -248,6 +276,7 @@ export class CommissionService {
       };
 
     } catch (err) {
+      this.logger.error(`❌ Error al sincronizar comisiones del CORE: ${err.message}`);
       console.error(err);
       throw new Error('Error al sincronizar comisiones del CORE');
     }
