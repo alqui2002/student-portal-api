@@ -3,7 +3,6 @@ import { AttendanceService } from './attendance.service';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { AttendanceFromCoreDto } from './entities/core-attendance.dto';
 
-@UseGuards(ExternalJwtAuthGuard)
 @Controller('commissions/:commissionId/attendances')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
@@ -22,6 +21,7 @@ export class AttendanceController {
     );
   }
 
+  @UseGuards(ExternalJwtAuthGuard)
   @Get(':userId')
   getUserAttendance(
     @Param('commissionId') commissionId: string,
