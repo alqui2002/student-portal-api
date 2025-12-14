@@ -69,7 +69,7 @@ export class EnrollmentsService {
     token: string,
   ) {
     const endpoint = 'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones';
-
+    
     const payload = {
       uuid_curso: commissionId,
       user_uuid: userId,
@@ -77,8 +77,15 @@ export class EnrollmentsService {
       rol: 'ALUMNO',
     };
 
+    if (!token) {
+      this.logger.warn(`⚠️  No se puede enviar inscripción a API externa: token no proporcionado`);
+      return;
+    }
+
     try {
-      await lastValueFrom(
+      this.logger.log(`Enviando inscripción a API externa: ${JSON.stringify(payload)}`);
+      
+      const response = await lastValueFrom(
         this.httpService.post(endpoint, payload, {
           headers: {
             'authorization': `Bearer ${token}`,
@@ -86,9 +93,16 @@ export class EnrollmentsService {
           },
         })
       );
-      this.logger.log(`Inscripción enviada a API externa → ${endpoint}`);
-    } catch (err) {
-      this.logger.error(`Error enviando inscripción a API externa: ${err.message}`);
+      
+      this.logger.log(`✅ Inscripción enviada exitosamente a API externa → ${endpoint}`);
+    } catch (err: any) {
+      const errorMessage = err.response?.data 
+        ? JSON.stringify(err.response.data)
+        : err.message;
+      const statusCode = err.response?.status || 'N/A';
+      
+      this.logger.error(`❌ Error enviando inscripción a API externa (${statusCode}): ${errorMessage}`);
+      this.logger.error(`Payload enviado: ${JSON.stringify(payload)}`);
       // No lanzamos el error para no interrumpir el flujo principal
     }
   }
