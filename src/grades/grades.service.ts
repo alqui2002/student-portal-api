@@ -103,40 +103,51 @@ export class GradesService {
             status: grade.status,
         };
     }
-
     async upsertGrade(
         userId: string,
         commissionId: string,
         dto: UpdateGradeDto,
       ) {
-        const grade = await this.gradeRepo.findOne({
+        // 1️⃣ Buscar usuario
+        const user = await this.userRepo.findOne({
+          where: { id: userId },
+        });
+        if (!user) {
+          throw new NotFoundException(`User ${userId} not found`);
+        }
+      
+        // 2️⃣ Buscar comisión
+        const commission = await this.commissionRepo.findOne({
+          where: { id: commissionId },
+        });
+        if (!commission) {
+          throw new NotFoundException(`Commission ${commissionId} not found`);
+        }
+      
+        // 3️⃣ Buscar grade existente (clave lógica)
+        let grade = await this.gradeRepo.findOne({
           where: {
             user: { id: userId },
             commission: { id: commissionId },
           },
         });
       
-        if (grade) {
-          Object.assign(grade, dto);
+        // 4️⃣ Si NO existe → CREATE
+        if (!grade) {
+          grade = this.gradeRepo.create({
+            user,
+            commission,
+            ...dto, // firstExam / secondExam / finalExam
+            status: dto.status ?? 'in_progress',
+          });
+      
           return this.gradeRepo.save(grade);
         }
       
-        const user = await this.userRepo.findOne({ where: { id: userId } });
-        const commission = await this.commissionRepo.findOne({
-          where: { id: commissionId },
-        });
+        // 5️⃣ Si existe → UPDATE parcial
+        Object.assign(grade, dto);
       
-        if (!user || !commission) {
-          throw new NotFoundException('User or commission not found');
-        }
-      
-        const newGrade = this.gradeRepo.create({
-          user,
-          commission,
-          ...dto,
-        });
-      
-        return this.gradeRepo.save(newGrade);
+        return this.gradeRepo.save(grade);
       }
       
 }

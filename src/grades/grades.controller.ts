@@ -1,6 +1,7 @@
-import { Controller, Get, Patch, Param, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, Post } from '@nestjs/common';
 import { GradesService } from './grades.service';
 import { UpdateGradeDto } from './dto/update-grade.dto';
+import { GradeFromCoreDto } from './dto/grade-from-core.dto';
 
 @Controller('grades')
 export class GradesController {
@@ -40,4 +41,8 @@ export class GradesController {
       dto,
     );
   }
+
+
+
+  
 }
