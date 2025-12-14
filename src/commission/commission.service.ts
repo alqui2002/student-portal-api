@@ -60,7 +60,7 @@ export class CommissionService {
   async upsertFromCore(dto: {
     uuid: string;
     courseId: string;
-    days?: string;
+    day?: string;
     startTime?: string;
     endTime?: string;
     shift?: string;
