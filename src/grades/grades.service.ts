@@ -102,50 +102,65 @@ export class GradesService {
             finalExam: grade.finalExam,
             status: grade.status,
         };
-    }async upsertGrade(
-        userId: string,
-        commissionId: string,
-        dto: UpdateGradeDto,
-      ) {
-        const user = await this.userRepo.findOne({ where: { id: userId } });
-        if (!user) throw new NotFoundException(`User ${userId} not found`);
-      
-        const commission = await this.commissionRepo.findOne({
-          where: { id: commissionId },
-        });
-        if (!commission)
-          throw new NotFoundException(`Commission ${commissionId} not found`);
-      
-        let grade = await this.gradeRepo.findOne({
-          where: {
-            user: { id: userId },
-            commission: { id: commissionId },
-          },
-        });
-      
-        // 🔹 calcular status automático si viene finalExam
-        const status =
-          dto.finalExam !== undefined
-            ? dto.finalExam >= 4
-              ? 'passed'
-              : 'failed'
-            : dto.status ?? 'in_progress';
-      
-        if (!grade) {
-          grade = this.gradeRepo.create({
-            user,
-            commission,
-            ...dto,
-            status,
-          });
-      
-          return this.gradeRepo.save(grade);
-        }
-      
-        Object.assign(grade, dto);
-        grade.status = status;
-      
-        return this.gradeRepo.save(grade);
+    }// grades.service.ts
+async upsertGrade(
+    userId: string,
+    commissionId: string,
+    dto: UpdateGradeDto,
+  ) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
+  
+    const commission = await this.commissionRepo.findOne({
+      where: { id: commissionId },
+    });
+    if (!commission)
+      throw new NotFoundException(`Commission ${commissionId} not found`);
+  
+    let grade = await this.gradeRepo.findOne({
+      where: {
+        user: { id: userId },
+        commission: { id: commissionId },
+      },
+      relations: ['user', 'commission'],
+    });
+  
+    let status = dto.status ?? 'in_progress';
+    if (dto.finalExam !== undefined) {
+      status = dto.finalExam >= 4 ? 'passed' : 'failed';
+    }
+  
+    // 🟢 CREATE
+    if (!grade) {
+      grade = new Grade();
+      grade.user = user;
+      grade.commission = commission;
+      if (dto.firstExam !== undefined) {
+        grade.firstExam = dto.firstExam;
       }
       
+      if (dto.secondExam !== undefined) {
+        grade.secondExam = dto.secondExam;
+      }
+      
+      if (dto.finalExam !== undefined) {
+        grade.finalExam = dto.finalExam;
+      }
+      
+      grade.status = status;
+  
+      return this.gradeRepo.save(grade);
+    }
+  
+    // 🟡 UPDATE
+    if (dto.firstExam !== undefined) grade.firstExam = dto.firstExam;
+    if (dto.secondExam !== undefined) grade.secondExam = dto.secondExam;
+    if (dto.finalExam !== undefined) grade.finalExam = dto.finalExam;
+  
+    grade.status = status;
+  
+    return this.gradeRepo.save(grade);
+  }
+  
+  
 }

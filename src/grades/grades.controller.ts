@@ -1,46 +1,44 @@
-import { Controller, Get, Patch, Param, Body, Post } from '@nestjs/common';
+// grades.controller.ts
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { GradesService } from './grades.service';
 import { UpdateGradeDto } from './dto/update-grade.dto';
-import { GradeFromCoreDto } from './dto/grade-from-core.dto';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
+@UseGuards(ExternalJwtAuthGuard)
 @Controller('grades')
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 
-  @Get('user/:userId')
-  findByUser(@Param('userId') userId: string) {
-    return this.gradesService.findByUser(userId);
-  }
-
-  @Get('user/:userId/commission/:commissionId')
-  findByUserAndCommission(
-    @Param('userId') userId: string,
-    @Param('commissionId') commissionId: string,
-  ) {
-    return this.gradesService.findByUserAndCommission(userId, commissionId);
-  }
-
-  @Patch('user/:userId/commission/:commissionId')
-  updateGrade(
-    @Param('userId') userId: string,
-    @Param('commissionId') commissionId: string,
-    @Body() dto: UpdateGradeDto,
-  ) {
-    return this.gradesService.updateGrade(userId, commissionId, dto);
-  }
-
+  // 🔹 UI / HUB / EVENTOS → UPSERT
   @Patch('user/:userId/commission/:commissionId')
   upsertGrade(
     @Param('userId') userId: string,
     @Param('commissionId') commissionId: string,
     @Body() dto: UpdateGradeDto,
   ) {
-    return this.gradesService.upsertGrade(userId, commissionId, dto);
+    return this.gradesService.upsertGrade(
+      userId,
+      commissionId,
+      dto,
+    );
   }
-  
-  
 
-
-
-  
+  // 🔹 Lectura
+  @Get('user/:userId/commission/:commissionId')
+  getByUserAndCommission(
+    @Param('userId') userId: string,
+    @Param('commissionId') commissionId: string,
+  ) {
+    return this.gradesService.findByUserAndCommission(
+      userId,
+      commissionId,
+    );
+  }
 }
