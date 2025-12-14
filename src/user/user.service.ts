@@ -42,7 +42,7 @@ export class UserService {
       id: createUserDto.uuid,
       name: createUserDto.name,
       email: createUserDto.email,
-      career, 
+      career: createUserDto.careerId ? career : undefined, 
     });
   
     return this.usersRepository.save(newUser);
