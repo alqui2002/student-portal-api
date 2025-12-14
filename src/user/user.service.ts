@@ -28,14 +28,16 @@ export class UserService {
     let career: Career | undefined = undefined;
   
     if (createUserDto.careerId) {
-      let career = await this.careersRepository.findOne({
+      const foundCareer = await this.careersRepository.findOne({
         where: { id: createUserDto.careerId },
       });
   
-      if (!career)
+      if (!foundCareer)
         throw new NotFoundException(
           `Career with id ${createUserDto.careerId} not found`,
         );
+      
+      career = foundCareer;
     }
   
     const newUser = this.usersRepository.create({
