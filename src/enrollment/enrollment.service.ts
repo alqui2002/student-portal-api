@@ -423,9 +423,18 @@ export class EnrollmentsService {
     return { success: true };
   }
   
-
   private async assignProfessorToCommission(user: User, commission: Commission) {
-    commission.professorName = `${user.name ?? ''}`.trim() || 'Profesor asignado';
+    const name =
+      user.name && user.name.trim().length > 0
+        ? user.name
+        : 'Profesor asignado';
+  
+    commission.professorName = name;
+  
+    this.logger.log(
+      `👨‍🏫 Asignando profesor "${name}" a comisión ${commission.id}`,
+    );
+  
     await this.commissionRepo.save(commission);
   }
   
