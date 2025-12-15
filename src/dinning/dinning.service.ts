@@ -39,6 +39,7 @@ export class DinningService {
   }
 
   async findByUser(userId: string) {
+    // Verificamos si el usuario existe (opcional, pero recomendado)
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -48,17 +49,12 @@ export class DinningService {
       relations: ['user'],
     });
 
-    if (!reservations.length) {
-      throw new NotFoundException('No reservations found for this user');
-    }
-
-    return reservations;
+    // ✅ CORRECCIÓN IMPORTANTE:
+    // Si no hay reservas, devolvemos un array vacío [] en lugar de lanzar error.
+    // Esto evita que el Frontend se rompa.
+    return reservations || [];
   }
 
-  /**
-   * Útil si mañana llegan eventos externos de "reservation.updated"
-   * y solo te pasan reservationId y no tu UUID interno.
-   */
   async findByReservationId(reservationId: number) {
     const reservation = await this.dinningRepository.findOne({
       where: { reservationId },
@@ -81,22 +77,21 @@ export class DinningService {
   async create(dto: CreateDinningReservationDto) {
     const { userId, reservationId, ...rest } = dto;
 
+    // Creamos la instancia. Nota: slotStartTime y slotEndTime se guardan directo
+    // porque tu Entity usa type: 'jsonb', lo cual es compatible con el objeto del DTO.
     const reservation = this.dinningRepository.create({
       id: uuidv4(),
       reservationId: reservationId ?? null,
       locationId: rest.locationId,
       mealTime: rest.mealTime,
       reservationTimeSlot: rest.reservationTimeSlot ?? null,
-      reservationDate: rest.reservationDate ?? new Date(),
+      reservationDate: rest.reservationDate,
       status: rest.status,
       cost: rest.cost,
       slotStartTime: rest.slotStartTime,
       slotEndTime: rest.slotEndTime,
+      createdAt: rest.createdAt ?? new Date(),
     });
-
-    if (rest.createdAt) {
-      reservation.createdAt = rest.createdAt;
-    }
 
     if (userId) {
       const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -114,32 +109,20 @@ export class DinningService {
   async update(id: string, dto: UpdateDinningReservationDto) {
     const reservation = await this.findOne(id);
 
-    const { reservationId, ...data } = dto;
-    Object.assign(reservation, data);
-
-    if (reservationId !== undefined) {
-      reservation.reservationId = reservationId;
-    }
-
-    if (dto.reservationDate) {
-      reservation.reservationDate = dto.reservationDate;
-    }
-
-    if (dto.createdAt) {
-      reservation.createdAt = dto.createdAt;
-    }
-
-    if (dto.reservationTimeSlot !== undefined) {
-      reservation.reservationTimeSlot = dto.reservationTimeSlot ?? null;
-    }
-
-    if (dto.slotStartTime) {
-      reservation.slotStartTime = dto.slotStartTime;
-    }
-
-    if (dto.slotEndTime) {
-      reservation.slotEndTime = dto.slotEndTime;
-    }
+    // ✅ CORRECCIÓN DE ERRORES DE SINTAXIS Y TIPADO
+    // TypeScript ahora reconocerá estas propiedades gracias a que instalaste @nestjs/mapped-types
+    
+    if (dto.reservationId !== undefined) reservation.reservationId = dto.reservationId;
+    if (dto.reservationDate) reservation.reservationDate = dto.reservationDate;
+    if (dto.mealTime) reservation.mealTime = dto.mealTime; // Estaba mal escrito "meal Time"
+    if (dto.status) reservation.status = dto.status;
+    
+    // Mapeo del resto de campos opcionales
+    if (dto.locationId !== undefined) reservation.locationId = dto.locationId;
+    if (dto.reservationTimeSlot !== undefined) reservation.reservationTimeSlot = dto.reservationTimeSlot;
+    if (dto.cost !== undefined) reservation.cost = dto.cost;
+    if (dto.slotStartTime) reservation.slotStartTime = dto.slotStartTime;
+    if (dto.slotEndTime) reservation.slotEndTime = dto.slotEndTime;
 
     if (dto.userId) {
       const user = await this.userRepository.findOne({ where: { id: dto.userId } });
@@ -157,7 +140,6 @@ export class DinningService {
   async remove(id: string) {
     const reservation = await this.findOne(id);
     await this.dinningRepository.remove(reservation);
-
     return { message: 'Reservation removed successfully' };
   }
 }
