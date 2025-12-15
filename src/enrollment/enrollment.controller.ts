@@ -51,6 +51,7 @@ export class EnrollmentsController {
     console.log(
       `📨 Enrollment core-event → ${JSON.stringify(payload)}`,
     );
+    return this.enrollmentsService.upsertFromCore(payload);
   } 
 }
 
