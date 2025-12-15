@@ -16,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
 import { AcademicHistoryModule } from './academic-history/academic-history.module';
 import { DinningModule } from './dinning/dinning.module';
 import { TransactionModule } from './transactions/transaction.module';
+import { HealthController } from './rabbitmq-consumer/health.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -34,6 +35,7 @@ import { TransactionModule } from './transactions/transaction.module';
     AuthModule,
     DinningModule,
     TransactionModule,
+    HealthController
 
   ],
 })
