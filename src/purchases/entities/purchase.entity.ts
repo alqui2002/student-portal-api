@@ -6,11 +6,17 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
+import { IsOptional } from 'class-validator';
 
 @Entity('purchases')
 export class Purchase {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
+  @IsOptional()
+  purchase_id: number;
+
 
   @ManyToOne(() => User, (user) => user.purchases, { eager: true })
   user: User;

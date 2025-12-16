@@ -174,26 +174,24 @@ export class PurchasesService {
     };
   }
   async upsertFromCore(payload: {
-    id: string;
+    id: number;
     userId: string;
     product: any[];
     total: string | number;
     date: string;
   }) {
-    // 1️⃣ Usuario
     const user = await this.userRepo.findOne({
       where: { id: payload.userId },
     });
+  
     if (!user) {
       throw new NotFoundException(
         `User ${payload.userId} not found for purchase ${payload.id}`,
       );
     }
   
-    // 2️⃣ Buscar compra por coreId (idempotencia)
     let purchase = await this.purchaseRepo.findOne({
-      where: { id: payload.id },
-      relations: ['user'],
+      where: { purchase_id: payload.id },
     });
   
     const normalizedProducts = (payload.product ?? []).map((p) => ({
@@ -204,10 +202,9 @@ export class PurchasesService {
       quantity: p.quantity ?? 1,
     }));
   
-    // 3️⃣ Crear o actualizar
     if (!purchase) {
       purchase = this.purchaseRepo.create({
-        id: payload.id,
+        purchase_id: payload.id,
         user,
         product: normalizedProducts,
         total: String(payload.total),
@@ -223,7 +220,6 @@ export class PurchasesService {
   
     return { success: true, purchaseId: purchase.id };
   }
-  
   
   
 }
