@@ -173,6 +173,57 @@ export class PurchasesService {
       purchases: savedPurchases,
     };
   }
+  async upsertFromCore(payload: {
+    id: string;
+    userId: string;
+    product: any[];
+    total: string | number;
+    date: string;
+  }) {
+    // 1️⃣ Usuario
+    const user = await this.userRepo.findOne({
+      where: { id: payload.userId },
+    });
+    if (!user) {
+      throw new NotFoundException(
+        `User ${payload.userId} not found for purchase ${payload.id}`,
+      );
+    }
+  
+    // 2️⃣ Buscar compra por coreId (idempotencia)
+    let purchase = await this.purchaseRepo.findOne({
+      where: { id: payload.id },
+      relations: ['user'],
+    });
+  
+    const normalizedProducts = (payload.product ?? []).map((p) => ({
+      name: p.name,
+      description: p.description ?? '',
+      productCode: p.productCode ?? null,
+      subtotal: String(p.subtotal),
+      quantity: p.quantity ?? 1,
+    }));
+  
+    // 3️⃣ Crear o actualizar
+    if (!purchase) {
+      purchase = this.purchaseRepo.create({
+        id: payload.id,
+        user,
+        product: normalizedProducts,
+        total: String(payload.total),
+        date: payload.date ? new Date(payload.date) : new Date(),
+      });
+    } else {
+      purchase.product = normalizedProducts;
+      purchase.total = String(payload.total);
+      purchase.date = payload.date ? new Date(payload.date) : purchase.date;
+    }
+  
+    await this.purchaseRepo.save(purchase);
+  
+    return { success: true, purchaseId: purchase.id };
+  }
+  
   
   
 }

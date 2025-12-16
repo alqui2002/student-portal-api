@@ -41,4 +41,11 @@ export class PurchasesController {
     return this.purchasesService.syncStorePurchases(userUuid, token);
   }
 
+  @Post('core-event')
+  async upsertFromCore(@Body() payload: any) {
+    return this.purchasesService.upsertFromCore(payload);
+  }
+
+
+
 }
