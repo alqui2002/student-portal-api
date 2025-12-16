@@ -1,14 +1,31 @@
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsDateString } from 'class-validator';
 
-export class CoreTransactionDto {
+export class TransactionDto {
   @IsUUID()
   uuid: string;
+
+  @IsOptional()
+  @IsUUID()
+  from_wallet_uuid?: string;
+
+  @IsOptional()
+  @IsUUID()
+  to_wallet_uuid?: string;
 
   @IsString()
   amount: string;
 
+  @IsOptional()
   @IsString()
-  processed_at: string;
+  currency?: string;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 
   @IsOptional()
   @IsString()
@@ -18,23 +35,14 @@ export class CoreTransactionDto {
   metadata?: any;
 
   @IsOptional()
-  from_wallet_uuid?: string;
+  @IsDateString()
+  processed_at?: string;
 
   @IsOptional()
-  to_wallet_uuid?: string;
-
-  @IsOptional()
-  currency?: string;
-
-  @IsOptional()
-  type?: string;
-
-  @IsOptional()
-  status?: string;
-
-  @IsOptional()
+  @IsDateString()
   created_at?: string;
 
   @IsOptional()
+  @IsDateString()
   updated_at?: string;
 }
