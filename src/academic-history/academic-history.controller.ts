@@ -15,9 +15,9 @@ export class AcademicHistoryController {
   @Patch(':userId/courses/:courseId')
   updateGrade(
     @Param('userId') userId: string,
-    @Param('courseId') courseId: string,
+    @Param('commissionId') commissionId: string,
     @Body() body: { finalNote: string; status: 'passed' | 'failed' },
   ) {
-    return this.academicHistoryService.updateGrade(userId, courseId, body);
+    return this.academicHistoryService.updateGrade(userId, commissionId, body);
   }
 }

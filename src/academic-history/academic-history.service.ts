@@ -44,11 +44,11 @@ export class AcademicHistoryService {
 
   async updateGrade(
     userId: string,
-    courseId: string,
+    commissionId: string,
     data: { finalNote: string; status: 'passed' | 'failed' },
   ) {
     const record = await this.historyRepo.findOne({
-      where: { user: { id: userId }, course: { id: courseId } },
+      where: { user: { id: userId }, commission: { id: commissionId } },
     });
 
     if (!record) throw new NotFoundException('Enrollment not found in history');
