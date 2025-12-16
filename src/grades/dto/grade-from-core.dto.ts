@@ -8,8 +8,8 @@ export class GradeFromCoreDto {
   @IsUUID()
   courseId: string;
 
-  @IsIn(['PARCIAL_1', 'PARCIAL_2', 'FINAL', 'RECU'])
-  examType: 'PARCIAL_1' | 'PARCIAL_2' | 'FINAL' | 'RECU';
+  @IsIn(['PARCIAL_1', 'PARCIAL_2', 'FINAL', 'RECUPERATORIO'])
+  examType: 'PARCIAL_1' | 'PARCIAL_2' | 'FINAL' | 'RECUPERATORIO';
 
   @IsNumber()
   @Min(0)
