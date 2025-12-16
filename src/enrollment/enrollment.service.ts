@@ -415,9 +415,17 @@ export class EnrollmentsService {
   
     await this.enrollmentRepo.save(enrollment);
   
-    // DOCENTE => asignar profesor a ESA comisión
+    // DOCENTE => alta / baja en la comisión
     if (dto.role === 'teacher') {
-      await this.assignProfessorToCommission(user, commission);
+      const status = dto.status?.toUpperCase();
+
+      // Si viene con BAJA desde el HUB, se limpia el profesor de la comisión
+      if (status === 'BAJA') {
+        await this.removeProfessorFromCommission(commission);
+      } else {
+        // Cualquier otro estado (o sin estado) lo consideramos como alta/asignación
+        await this.assignProfessorToCommission(user, commission);
+      }
     }
   
     return { success: true };
@@ -437,7 +445,18 @@ export class EnrollmentsService {
   
     await this.commissionRepo.save(commission);
   }
-  
 
+  private async removeProfessorFromCommission(commission: Commission) {
+    // Usamos string vacío para evitar problemas con la columna NOT NULL
+    commission.professorName = 'No asignado';
+
+    this.logger.log(
+      `👨‍🏫 Eliminando profesor de la comisión ${commission.id} por BAJA en el Hub`,
+    );
+
+    await this.commissionRepo.save(commission);
+  }
+
+ 
 }
 
