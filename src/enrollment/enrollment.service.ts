@@ -136,7 +136,7 @@ export class EnrollmentsService {
             'content-type': 'application/json',
           },
           data: {
-            razon: 'Cambio de carrera',
+            razon: 'Baja emitida por alumno',
           },
           
         })

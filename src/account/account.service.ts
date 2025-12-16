@@ -27,11 +27,19 @@ export class AccountService {
     return { balance: account.balance.toFixed(2) };
   }
 
-  // 👇 ESTE ES TU MÉTODO MEJORADO (Con Env Vars y DTO correcto) 👇
-  async deposit(userId: string, dto: DepositDto, token?: string) {
-    const { amount, type, description, currency } = dto;
+  async deposit(
+    userId: string,
+    walletId: string,
+    dto: DepositDto,
+    token?: string,
+  ) {
+
+    if (!walletId) {
+      throw new NotFoundException('Wallet not found in token');
+    }
     
-    // --- 1. Lógica Local (Actualizar tu DB) ---
+      const { amount, type, description, currency } = dto;
+    
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -40,23 +48,21 @@ export class AccountService {
       account = this.accountRepo.create({ user, balance: 0 });
     }
 
-    // Actualizamos el saldo local
     account.balance += amount; 
     await this.accountRepo.save(account);
 
-    // --- 2. Lógica Externa (Avisar al CORE) ---
     try {
-      // Usa el puerto 3030 por defecto o la variable de entorno
-      const coreUrl = process.env.HUB_URL || 'http://localhost:3030'; 
+      const coreUrl = process.env.HUB_URL ;
 
       const corePayload = {
         from: 'SYSTEM',
-        to: userId,
-        amount: amount,
+        to: walletId, 
+        amount,
         currency: currency || 'ARG',
-        type: type,
-        description: description || 'Carga de saldo'
+        type: type || 'CARGA_DE_SALDO',
+        description: description || 'Transferencia recibida',
       };
+      
 
       this.logger.log(`Enviando transacción al CORE: ${type} - $${amount}`);
 
@@ -66,7 +72,7 @@ export class AccountService {
           corePayload,
           {
             headers: {
-              Authorization: token, // Token completo "Bearer ..."
+              Authorization: token, 
               'Content-Type': 'application/json'
             }
           }
@@ -80,9 +86,7 @@ export class AccountService {
 
     return { balance: account.balance.toFixed(2) };
   }
-  // 👆 ---------------------------------------------------- 👆
-
-  // 👇 MÉTODOS DE TUS COMPAÑEROS (Los dejamos igual, usando axios) 👇
+  
   async syncWallet(userUuid: string, token: string) {
     const user = await this.userRepo.findOne({ where: { id: userUuid } });
     if (!user) throw new NotFoundException('User not found');

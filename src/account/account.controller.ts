@@ -14,20 +14,19 @@ export class AccountController {
     return this.accountService.getBalance(String(userId));
   }
 
-  // 👇 AQUÍ ESTÁ TU CAMBIO FUSIONADO 👇
   @UseGuards(ExternalJwtAuthGuard)
   @Post(':userId/transactions')
   deposit(
     @Param('userId') userId: string,
     @Body() dto: DepositDto,
-    @Headers('authorization') token: string, // ✅ Capturamos "Bearer ..." completo
+    @Req() req,
   ) {
-    // Enviamos el token completo al servicio para que el Core lo acepte
-    return this.accountService.deposit(userId, dto, token);
-  }
-  // 👆 ---------------------------- 👆
+    const token = req.headers.authorization;
+    const walletId = req.user?.wallet?.[0]; 
 
-  // 👇 MANTENEMOS EL CÓDIGO DE TUS COMPAÑEROS 👇
+    return this.accountService.deposit(userId, walletId, dto, token);
+  }
+
   @Get('wallet/sync')
   @UseGuards(ExternalJwtAuthGuard)
   async syncStorePurchases(@User('sub') userUuid: string, @Req() req) {
