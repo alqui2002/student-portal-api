@@ -133,7 +133,12 @@ export class EnrollmentsService {
         this.httpService.delete(endpoint, {
           headers: {
             'authorization': `Bearer ${token}`,
+            'content-type': 'application/json',
           },
+          data: {
+            razon: 'Cambio de carrera',
+          },
+          
         })
       );
       
