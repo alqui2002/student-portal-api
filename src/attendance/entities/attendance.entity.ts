@@ -8,6 +8,12 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { Commission } from '../../commission/entities/commission.entity';
 
+export enum AttendanceStatus {
+  PRESENT = 'P',
+  ABSENT = 'A',
+  HALF_DAY = 'M',
+}
+
 @Entity('attendances')
 export class Attendance {
   @PrimaryGeneratedColumn('uuid')
@@ -24,8 +30,8 @@ export class Attendance {
   @Column({ type: 'date' })
   date: string;
 
-  @Column({ default: false })
-  present: boolean;
+  @Column({ type: 'enum', enum: AttendanceStatus, default: AttendanceStatus.ABSENT })
+  present: AttendanceStatus;
 
   @CreateDateColumn()
   createdAt: Date;

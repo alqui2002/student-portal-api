@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Attendance } from './entities/attendance.entity';
+import { Attendance, AttendanceStatus } from './entities/attendance.entity';
 import { User } from '../user/entities/user.entity';
 import { Commission } from '../commission/entities/commission.entity';
 import { AttendanceFromCoreDto } from './entities/core-attendance.dto';
@@ -17,7 +17,7 @@ export class AttendanceService {
     private readonly commissionRepo: Repository<Commission>,
   ) { }
 
-  async markAttendance(userId: string, commissionId: string, present: boolean, date?: string) {
+  async markAttendance(userId: string, commissionId: string, present: AttendanceStatus, date?: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const commission = await this.commissionRepo.findOne({ where: { id: commissionId } });
 
@@ -87,11 +87,9 @@ export class AttendanceService {
       },
     });
   
-    const present = status === 'P';
-  
     // 4️⃣ Si existe → UPDATE
     if (attendance) {
-      attendance.present = present;
+      attendance.present = status as AttendanceStatus;
       return this.attendanceRepo.save(attendance);
     }
   
@@ -100,7 +98,7 @@ export class AttendanceService {
       user,
       commission,
       date,
-      present,
+      present: status as AttendanceStatus,
     });
   
     return this.attendanceRepo.save(attendance);

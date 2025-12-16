@@ -2,6 +2,7 @@ import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { AttendanceFromCoreDto } from './entities/core-attendance.dto';
+import { AttendanceStatus } from './entities/attendance.entity';
 
 @Controller('commissions/:commissionId/attendances')
 export class AttendanceController {
@@ -16,7 +17,7 @@ export class AttendanceController {
   markAttendance(
     @Param('commissionId') commissionId: string,
     @Param('userId') userId: string,
-    @Body() body: { present: boolean; date?: string },
+    @Body() body: { present: AttendanceStatus; date?: string },
   ) {
     return this.attendanceService.markAttendance(
       userId,           
