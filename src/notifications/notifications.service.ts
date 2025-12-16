@@ -88,6 +88,20 @@ async upsertFromCore(dto: CoreNotificationDto) {
     );
   }
 
+  const titleLower = (dto.title ?? '').toLowerCase();
+  let type: NotiType = NotiType.Event;
+
+  if (titleLower.includes('sancion') || titleLower.includes('sanción')) {
+    type = NotiType.Sanction;
+  } else if (
+    titleLower.includes('nota') ||
+    titleLower.includes('examen') ||
+    titleLower.includes('parcial') ||
+    titleLower.includes('final')
+  ) {
+    type = NotiType.Exam;
+  }
+
   // 3️⃣ Crear notificación
   const notification = this.notificationRepo.create({
     id: dto.uuid,
@@ -100,6 +114,7 @@ async upsertFromCore(dto: CoreNotificationDto) {
       ? new Date(dto.created_at)
       : new Date(),
   });
+
 
   await this.notificationRepo.save(notification);
 
