@@ -16,6 +16,7 @@ export class Purchase {
   @Column({ type: 'integer', nullable: true })
   purchase_id: number | null;
 
+  
 
   @ManyToOne(() => User, (user) => user.purchases, { eager: true })
   user: User;

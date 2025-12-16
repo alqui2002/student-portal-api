@@ -48,6 +48,16 @@ export class TransactionService {
     });
   }
 
+  async findByWalletId(walletId: string) {
+    return this.transactionRepo.find({
+      where: [
+        { from_wallet_uuid: walletId },
+        { to_wallet_uuid: walletId },
+      ],
+      order: { created_at: 'DESC' },
+    });
+  }
+
   async findOne(uuid: string) {
     return this.transactionRepo.findOne({
       where: { uuid },
