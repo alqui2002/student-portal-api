@@ -20,6 +20,12 @@ export class UpdateGradeDto {
   finalExam?: number;
 
   @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(10)
+  recuExam?: number;
+
+  @IsOptional()
   @IsIn(['in_progress', 'passed', 'failed'])
   status?: 'in_progress' | 'passed' | 'failed';
 }

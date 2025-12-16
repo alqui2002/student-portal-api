@@ -24,6 +24,9 @@ export class Grade {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   finalExam: number;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  recuExam: number;
+
   @Column({ type: 'varchar', length: 20, default: 'in_progress' })
   status: 'in_progress' | 'passed' | 'failed';
 }

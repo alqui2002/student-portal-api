@@ -100,6 +100,7 @@ export class GradesService {
             firstExam: grade.firstExam,
             secondExam: grade.secondExam,
             finalExam: grade.finalExam,
+            recuExam: grade.recuExam,
             status: grade.status,
         };
     }// grades.service.ts
@@ -147,6 +148,10 @@ async upsertGrade(
         grade.finalExam = dto.finalExam;
       }
       
+      if (dto.recuExam !== undefined) {
+        grade.recuExam = dto.recuExam;
+      }
+      
       grade.status = status;
   
       return this.gradeRepo.save(grade);
@@ -156,6 +161,7 @@ async upsertGrade(
     if (dto.firstExam !== undefined) grade.firstExam = dto.firstExam;
     if (dto.secondExam !== undefined) grade.secondExam = dto.secondExam;
     if (dto.finalExam !== undefined) grade.finalExam = dto.finalExam;
+    if (dto.recuExam !== undefined) grade.recuExam = dto.recuExam;
   
     grade.status = status;
   
