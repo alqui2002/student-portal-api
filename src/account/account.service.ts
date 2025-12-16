@@ -68,7 +68,7 @@ export class AccountService {
 
       await firstValueFrom(
         this.httpService.post(
-          `${coreUrl}/api/transfers`, 
+          `https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers`, 
           corePayload,
           {
             headers: {
@@ -86,7 +86,7 @@ export class AccountService {
 
     return { balance: account.balance.toFixed(2) };
   }
-  
+
   async syncWallet(userUuid: string, token: string) {
     const user = await this.userRepo.findOne({ where: { id: userUuid } });
     if (!user) throw new NotFoundException('User not found');
