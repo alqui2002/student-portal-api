@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Headers } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { DepositDto } from './dtos/account.dto';
-import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard'; // ✅ Usamos el Guard nuevo
 import { User } from 'src/auth/user.decorator';
 
 @Controller('account')
@@ -14,25 +14,26 @@ export class AccountController {
     return this.accountService.getBalance(String(userId));
   }
 
-  
+  // 👇 AQUÍ ESTÁ TU CAMBIO FUSIONADO 👇
   @UseGuards(ExternalJwtAuthGuard)
   @Post(':userId/transactions')
   deposit(
     @Param('userId') userId: string,
     @Body() dto: DepositDto,
-    @Req() req
+    @Headers('authorization') token: string, // ✅ Capturamos "Bearer ..." completo
   ) {
-    const token = req.headers.authorization?.split(' ')[1];
+    // Enviamos el token completo al servicio para que el Core lo acepte
     return this.accountService.deposit(userId, dto, token);
   }
-  
+  // 👆 ---------------------------- 👆
 
+  // 👇 MANTENEMOS EL CÓDIGO DE TUS COMPAÑEROS 👇
   @Get('wallet/sync')
-    @UseGuards(ExternalJwtAuthGuard)
-    async syncStorePurchases(@User('sub') userUuid: string, @Req() req) {
-      const token = req.headers.authorization?.split(' ')[1];
-      return this.accountService.syncWallet(userUuid, token);
-    }
+  @UseGuards(ExternalJwtAuthGuard)
+  async syncStorePurchases(@User('sub') userUuid: string, @Req() req) {
+    const token = req.headers.authorization?.split(' ')[1];
+    return this.accountService.syncWallet(userUuid, token);
+  }
 
   @UseGuards(ExternalJwtAuthGuard)
   @Get('me')
@@ -41,5 +42,4 @@ export class AccountController {
     @Req() req) {
     return this.accountService.getProfile(userUuid);
   }
-   
 }
