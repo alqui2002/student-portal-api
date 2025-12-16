@@ -13,9 +13,8 @@ export class Purchase {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  @IsOptional()
-  purchase_id: number;
+  @Column({ type: 'integer', nullable: true })
+  purchase_id: number | null;
 
 
   @ManyToOne(() => User, (user) => user.purchases, { eager: true })
