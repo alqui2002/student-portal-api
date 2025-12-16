@@ -8,6 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
 class SlotTimeDto {
   @IsNumber()
@@ -62,15 +63,13 @@ export class CreateDinningReservationDto {
   @IsNumber()
   cost: number;
 
-  @ValidateNested()
-  @Type(() => SlotTimeDto)
-  @Transform(({ value }) => transformSlotTime(value))
-  slotStartTime: SlotTimeDto;
+  @IsString()
+  @IsNotEmpty()
+  slotStartTime: string;
 
-  @ValidateNested()
-  @Type(() => SlotTimeDto)
-  @Transform(({ value }) => transformSlotTime(value))
-  slotEndTime: SlotTimeDto;
+  @IsString()
+  @IsNotEmpty()
+  slotEndTime: string;
 }
 
 function transformToDate(value: unknown): Date | undefined {

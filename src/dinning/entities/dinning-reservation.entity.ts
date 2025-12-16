@@ -49,9 +49,10 @@ export class DinningReservation {
   @Column({ type: 'timestamp with time zone', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
-  @Column({ type: 'jsonb' })
-  slotStartTime: SlotTime;
+  @Column({ type: 'varchar', length: 8 })
+  slotStartTime: string;
 
-  @Column({ type: 'jsonb' })
-  slotEndTime: SlotTime;
+  @Column({ type: 'varchar', length: 8 })
+  slotEndTime: string;
+
 }

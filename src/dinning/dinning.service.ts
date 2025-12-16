@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+
 import { DinningReservation } from './entities/dinning-reservation.entity';
 import { CreateDinningReservationDto } from './dto/create-dinning-reservation.dto';
 import { UpdateDinningReservationDto } from './dto/update-dinning-reservation.dto';
 import { User } from '../user/entities/user.entity';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class DinningService {
@@ -18,7 +19,7 @@ export class DinningService {
   ) {}
 
   // ---------------------------------------------------------------------------
-  // BASIC GETTERS
+  // GETTERS
   // ---------------------------------------------------------------------------
 
   findAll() {
@@ -39,20 +40,14 @@ export class DinningService {
   }
 
   async findByUser(userId: string) {
-    // Verificamos si el usuario existe (opcional, pero recomendado)
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    const reservations = await this.dinningRepository.find({
+    return this.dinningRepository.find({
       where: { user: { id: userId } },
       order: { reservationDate: 'ASC' },
       relations: ['user'],
     });
-
-    // ✅ CORRECCIÓN IMPORTANTE:
-    // Si no hay reservas, devolvemos un array vacío [] en lugar de lanzar error.
-    // Esto evita que el Frontend se rompa.
-    return reservations || [];
   }
 
   async findByReservationId(reservationId: number) {
@@ -77,8 +72,6 @@ export class DinningService {
   async create(dto: CreateDinningReservationDto) {
     const { userId, reservationId, ...rest } = dto;
 
-    // Creamos la instancia. Nota: slotStartTime y slotEndTime se guardan directo
-    // porque tu Entity usa type: 'jsonb', lo cual es compatible con el objeto del DTO.
     const reservation = this.dinningRepository.create({
       id: uuidv4(),
       reservationId: reservationId ?? null,
@@ -88,8 +81,11 @@ export class DinningService {
       reservationDate: rest.reservationDate,
       status: rest.status,
       cost: rest.cost,
+
+      // ⏱️ strings tal cual llegan
       slotStartTime: rest.slotStartTime,
       slotEndTime: rest.slotEndTime,
+
       createdAt: rest.createdAt ?? new Date(),
     });
 
@@ -109,23 +105,37 @@ export class DinningService {
   async update(id: string, dto: UpdateDinningReservationDto) {
     const reservation = await this.findOne(id);
 
-    // ✅ CORRECCIÓN DE ERRORES DE SINTAXIS Y TIPADO
-    // TypeScript ahora reconocerá estas propiedades gracias a que instalaste @nestjs/mapped-types
-    
-    if (dto.reservationId !== undefined) reservation.reservationId = dto.reservationId;
-    if (dto.reservationDate) reservation.reservationDate = dto.reservationDate;
-    if (dto.mealTime) reservation.mealTime = dto.mealTime; // Estaba mal escrito "meal Time"
-    if (dto.status) reservation.status = dto.status;
-    
-    // Mapeo del resto de campos opcionales
-    if (dto.locationId !== undefined) reservation.locationId = dto.locationId;
-    if (dto.reservationTimeSlot !== undefined) reservation.reservationTimeSlot = dto.reservationTimeSlot;
-    if (dto.cost !== undefined) reservation.cost = dto.cost;
-    if (dto.slotStartTime) reservation.slotStartTime = dto.slotStartTime;
-    if (dto.slotEndTime) reservation.slotEndTime = dto.slotEndTime;
+    if (dto.reservationId !== undefined)
+      reservation.reservationId = dto.reservationId;
+
+    if (dto.locationId !== undefined)
+      reservation.locationId = dto.locationId;
+
+    if (dto.mealTime !== undefined)
+      reservation.mealTime = dto.mealTime;
+
+    if (dto.reservationTimeSlot !== undefined)
+      reservation.reservationTimeSlot = dto.reservationTimeSlot;
+
+    if (dto.reservationDate !== undefined)
+      reservation.reservationDate = dto.reservationDate;
+
+    if (dto.status !== undefined)
+      reservation.status = dto.status;
+
+    if (dto.cost !== undefined)
+      reservation.cost = dto.cost;
+
+    if (dto.slotStartTime !== undefined)
+      reservation.slotStartTime = dto.slotStartTime;
+
+    if (dto.slotEndTime !== undefined)
+      reservation.slotEndTime = dto.slotEndTime;
 
     if (dto.userId) {
-      const user = await this.userRepository.findOne({ where: { id: dto.userId } });
+      const user = await this.userRepository.findOne({
+        where: { id: dto.userId },
+      });
       if (!user) throw new NotFoundException('User not found');
       reservation.user = user;
     }
