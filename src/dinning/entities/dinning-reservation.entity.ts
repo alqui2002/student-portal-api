@@ -24,8 +24,8 @@ export class DinningReservation {
   @JoinColumn({ name: 'userId' })
   user?: User;
 
-  @Column({ type: 'int' })
-  locationId: number;
+  @Column({ type: 'uuid' })
+  locationId: string;
 
 
   @Column({ type: 'varchar', length: 50 })

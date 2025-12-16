@@ -37,8 +37,7 @@ export class CreateDinningReservationDto {
 
   @IsUUID()
   @IsNotEmpty()
-  @Transform(({ value }) => Number(value))
-  locationId: number;
+  locationId: string;
 
   @IsString()
   @IsNotEmpty()
