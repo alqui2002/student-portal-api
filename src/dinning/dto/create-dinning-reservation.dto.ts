@@ -94,14 +94,27 @@ function transformToDate(value: unknown): Date | undefined {
 
   return undefined;
 }
-
 function transformSlotTime(value: unknown): SlotTimeDto | undefined {
   if (value === null || value === undefined) {
     return undefined;
   }
 
+  if (typeof value === 'string') {
+    const parts = value.split(':').map(Number);
+
+    if (parts.length >= 2 && !parts.some(isNaN)) {
+      const [hour, minute, second = 0] = parts;
+      return {
+        hour,
+        minute,
+        second,
+        nano: 0,
+      };
+    }
+  }
+
   if (Array.isArray(value)) {
-    const [hour = 0, minute = 0, second = 0, nano = 0] = value as number[];
+    const [hour = 0, minute = 0, second = 0, nano = 0] = value;
     return { hour, minute, second, nano };
   }
 
@@ -111,3 +124,4 @@ function transformSlotTime(value: unknown): SlotTimeDto | undefined {
 
   return undefined;
 }
+
