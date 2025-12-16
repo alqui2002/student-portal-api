@@ -26,9 +26,9 @@ export class DinningService {
     return this.dinningRepository.find({ relations: ['user'] });
   }
 
-  async findOne(id: string) {
+  async findOne(reservationId: number) {
     const reservation = await this.dinningRepository.findOne({
-      where: { id },
+      where: { reservationId },
       relations: ['user'],
     });
 
@@ -102,8 +102,8 @@ export class DinningService {
   // UPDATE
   // ---------------------------------------------------------------------------
 
-  async update(id: string, dto: UpdateDinningReservationDto) {
-    const reservation = await this.findOne(id);
+  async update(reservationId: number, dto: UpdateDinningReservationDto) {
+    const reservation = await this.findOne(reservationId);
 
     if (dto.reservationId !== undefined)
       reservation.reservationId = dto.reservationId;
@@ -147,8 +147,8 @@ export class DinningService {
   // DELETE
   // ---------------------------------------------------------------------------
 
-  async remove(id: string) {
-    const reservation = await this.findOne(id);
+  async remove(reservationId: number) {
+    const reservation = await this.findOne(reservationId);
     await this.dinningRepository.remove(reservation);
     return { message: 'Reservation removed successfully' };
   }

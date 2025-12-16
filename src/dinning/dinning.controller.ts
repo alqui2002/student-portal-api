@@ -20,8 +20,8 @@ export class DinningController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.dinningService.findOne(id);
+  findOne(@Param('id') reservationId: number) {
+    return this.dinningService.findOne(reservationId);
   }
 
   @Post()
@@ -30,12 +30,12 @@ export class DinningController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateDinningReservationDto) {
-    return this.dinningService.update(id, dto);
+  update(@Param('id') reservationId: number, @Body() dto: UpdateDinningReservationDto) {
+    return this.dinningService.update(reservationId, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.dinningService.remove(id);
+  remove(@Param('id') reservationId: number) {
+    return this.dinningService.remove(reservationId);
   }
 }
