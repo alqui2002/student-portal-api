@@ -61,10 +61,10 @@ export class CalendarController {
   ) {
     return this.service.updateStatus(id, body.status);
   }
+  @Post('sync')
+  sync(@Req() req) {
+    return this.calendarSyncService.syncUserCalendar(req.user.id);
+  }
 
-    @Post("sync")
-    sync(@Req() req) {
-      return this.calendarSyncService.syncUserCalendar(req.user.id);
-    }
 
 }

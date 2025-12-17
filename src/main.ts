@@ -17,7 +17,18 @@ async function bootstrap() {
     methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
     allowedHeaders: "Content-Type,Authorization",
   });
-  
+
+  const server = app.getHttpAdapter().getInstance();
+
+  server.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(204);
+  });
+
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
