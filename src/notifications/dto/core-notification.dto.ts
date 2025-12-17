@@ -1,5 +1,6 @@
 // notifications/dto/core-notification.dto.ts
-import { IsString, IsUUID, IsOptional } from 'class-validator';
+import { IsString, IsUUID, IsOptional, IsNotEmpty, IsEnum } from 'class-validator';
+import { NotiType } from '../entities/notifications.entity';
 
 export class CoreNotificationDto {
   @IsUUID()
@@ -11,6 +12,13 @@ export class CoreNotificationDto {
   @IsString()
   title: string;
 
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+
+  @IsEnum(NotiType)
+  type: NotiType;
+
   @IsOptional()
   @IsString()
   from?: string;
@@ -18,4 +26,6 @@ export class CoreNotificationDto {
   @IsOptional()
   @IsString()
   created_at?: string;
+  @IsOptional()
+  metadata?: Record<string, any>;
 }
