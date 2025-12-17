@@ -47,7 +47,6 @@ export class CoursesController {
   }
 
   @Patch(':id/correlatives')
-  @UseGuards(ExternalJwtAuthGuard)
   addCorrelative(
     @Param('id') courseId: string,
     @Body('correlativeId') correlativeId: string,
