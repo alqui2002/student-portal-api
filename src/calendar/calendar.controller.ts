@@ -63,13 +63,9 @@ export class CalendarController {
     return this.service.updateStatus(id, body.status);
   }
   @UseGuards(ExternalJwtAuthGuard)
-@Post('sync')
-async sync(@Req() req) {
-  // 👇 ESTE es el cambio clave
-  const userId = req.user.userId; 
-
-  return this.syncService.syncUserCalendar(userId);
-}
-
-
-}
+  @Post('sync')
+  sync(@Req() req) {
+    console.log('REQ.USER =>', req.user);
+    return this.syncService.syncUserCalendar(req.user.userId);
+  }
+  }
