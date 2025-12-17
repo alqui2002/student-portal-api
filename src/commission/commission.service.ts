@@ -59,6 +59,19 @@ export class CommissionService {
     const commission = this.commissionRepo.create({ ...dto, course });
     return this.commissionRepo.save(commission);
   }
+
+  async remove(commissionId: string) {
+    const commission = await this.commissionRepo.findOne({
+      where: { id: commissionId },
+    });
+
+    if (!commission) {
+      throw new NotFoundException('Commission not found');
+    }
+
+    await this.commissionRepo.remove(commission);
+    return { success: true };
+  }
   async upsertFromCore(dto: {
       uuid: string;
       courseId: string;

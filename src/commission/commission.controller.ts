@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, Req, Delete } from '@nestjs/common';
 import { CommissionService } from './commission.service';
 import { CreateCommissionDto } from './dto/create-commission.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
@@ -37,6 +37,11 @@ export class CommissionController {
 @Controller('commissions')
 export class CommissionSyncController {
   constructor(private readonly commissionService: CommissionService) {}
+
+  @Delete(':commissionId')
+  remove(@Param('commissionId') commissionId: string) {
+    return this.commissionService.remove(commissionId);
+  }
 
   @Get('sync')
   @UseGuards(ExternalJwtAuthGuard)
