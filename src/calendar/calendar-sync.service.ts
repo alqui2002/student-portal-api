@@ -32,13 +32,7 @@ export class CalendarSyncService {
 
       const { data: classes } = await firstValueFrom(
         this.http.get(
-          "https://backoffice-production-df78.up.railway.app/api/v1/clases-individuales",
-          {
-            params: {
-              param: "id_curso",
-              value: commissionId,
-            },
-          }
+          `https://backoffice-production-df78.up.railway.app/api/v1/clases-individuales/param=id_curso&value=${commissionId}`
         )
       );
 
