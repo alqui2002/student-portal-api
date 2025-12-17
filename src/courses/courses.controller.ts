@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException, Req, Patch } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
@@ -45,6 +45,20 @@ export class CoursesController {
   create(@Body() dto: CreateCourseDto) {
     return this.coursesService.create(dto);
   }
+
+  @Patch(':id/correlatives')
+  @UseGuards(ExternalJwtAuthGuard)
+  addCorrelative(
+    @Param('id') courseId: string,
+    @Body('correlativeId') correlativeId: string,
+  ) {
+    if (!correlativeId) {
+      throw new BadRequestException('correlativeId is required');
+    }
+
+    return this.coursesService.addCorrelative(courseId, correlativeId);
+  }
+
 
   @Post('core-event')
   async upsertFromCore(@Body() body: {

@@ -25,7 +25,7 @@ export class CoursesService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
+  ) { }
 
   async findAll() {
     const courses = await this.courseRepo.find({
@@ -218,19 +218,19 @@ export class CoursesService {
           commissions:
             status === 'available'
               ? futureCommissions.map((comm) => ({
-                  id: comm.id,
-                  days: comm.days,
-                  shift: comm.shift,
-                  mode: comm.mode,
-                  startTime: comm.startTime,
-                  endTime: comm.endTime,
-                  classRoom: comm.classRoom,
-                  professorName: comm.professorName,
-                  availableSpots: comm.availableSpots,
-                  totalSpots: comm.totalSpots,
-                  startDate: comm.startDate,
-                  endDate: comm.endDate,
-                }))
+                id: comm.id,
+                days: comm.days,
+                shift: comm.shift,
+                mode: comm.mode,
+                startTime: comm.startTime,
+                endTime: comm.endTime,
+                classRoom: comm.classRoom,
+                professorName: comm.professorName,
+                availableSpots: comm.availableSpots,
+                totalSpots: comm.totalSpots,
+                startDate: comm.startDate,
+                endDate: comm.endDate,
+              }))
               : [],
         };
       }),
@@ -241,29 +241,29 @@ export class CoursesService {
       where: { id: careerId },
       relations: ['courses'],
     });
-  
+
     if (!career) {
       throw new NotFoundException(`Career ${careerId} not found`);
     }
-  
+
     const alreadyLinked = career.courses.some(
       (c) => c.id === courseId,
     );
-  
+
     if (alreadyLinked) return;
-  
+
     const course = await this.courseRepo.findOne({
       where: { id: courseId },
     });
-  
+
     if (!course) {
       throw new NotFoundException(`Course ${courseId} not found`);
     }
-  
+
     career.courses.push(course);
     await this.careerRepo.save(career);
   }
-  
+
 
   async upsertFromCore(dto: {
     uuid: string;
@@ -275,11 +275,11 @@ export class CoursesService {
     if (!dto.uuid || !dto.name || !dto.code || !dto.careerId) {
       throw new BadRequestException('Invalid course payload from CORE');
     }
-  
+
     let course = await this.courseRepo.findOne({
       where: { id: dto.uuid },
     });
-  
+
     if (!course) {
       course = this.courseRepo.create({
         id: dto.uuid,
@@ -287,7 +287,7 @@ export class CoursesService {
         description: dto.description,
         code: dto.code,
       });
-  
+
       await this.courseRepo.save(course);
     } else {
       course.name = dto.name;
@@ -295,9 +295,9 @@ export class CoursesService {
       course.code = dto.code;
       await this.courseRepo.save(course);
     }
-  
+
     await this.linkCourseToCareer(dto.careerId, course.id);
-  
+
     return {
       success: true,
       courseId: course.id,
@@ -431,5 +431,59 @@ export class CoursesService {
       'Content-Type': 'application/json',
     };
   }
+
+  async addCorrelative(courseId: string, correlativeId: string) {
+    if (!isUuid(courseId)) {
+      throw new BadRequestException('Invalid courseId');
+    }
+
+    if (!isUuid(correlativeId)) {
+      throw new BadRequestException('Invalid correlativeId');
+    }
+
+    if (courseId === correlativeId) {
+      throw new BadRequestException('A course cannot be correlative of itself');
+    }
+
+    const course = await this.courseRepo.findOne({
+      where: { id: courseId },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course ${courseId} not found`);
+    }
+
+    const correlative = await this.courseRepo.findOne({
+      where: { id: correlativeId },
+    });
+
+    if (!correlative) {
+      throw new NotFoundException(
+        `Correlative course ${correlativeId} not found`,
+      );
+    }
+
+    const correlates = Array.isArray(course.correlates)
+      ? course.correlates
+      : [];
+
+    if (correlates.includes(correlativeId)) {
+      return {
+        success: true,
+        message: 'Correlative already exists',
+        correlates,
+      };
+    }
+
+    course.correlates = [...correlates, correlativeId];
+    await this.courseRepo.save(course);
+
+    return {
+      success: true,
+      courseId,
+      correlates: course.correlates,
+    };
+  }
+
 
 }
