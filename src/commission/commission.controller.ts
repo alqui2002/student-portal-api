@@ -8,16 +8,19 @@ export class CommissionController {
   constructor(private readonly commissionService: CommissionService) {}
 
   @Get()
+  @UseGuards(ExternalJwtAuthGuard)
   findByCourse(@Param('courseId') courseId: string) {
     return this.commissionService.findByCourse(courseId);
   }
 
   @Post()
+  @UseGuards(ExternalJwtAuthGuard)
   create(@Param('courseId') courseId: string, @Body() dto: CreateCommissionDto) {
     return this.commissionService.create(courseId, dto);
   }
 
   @Get()
+  @UseGuards(ExternalJwtAuthGuard)
   findByCourseWithStatus(
     @Param('courseId') courseId: string,
     @Query('status') status?: 'future' | 'in_progress' | 'past'

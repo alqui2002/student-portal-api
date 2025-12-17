@@ -15,21 +15,25 @@ export class CareerController {
   }
 
   @Get()
+  @UseGuards(ExternalJwtAuthGuard)
   findAll() {
     return this.careerService.findAll();
   }
 
   @Get(':id')
+  @UseGuards(ExternalJwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.careerService.findOne(id);
   }
 
   @Post()
+  @UseGuards(ExternalJwtAuthGuard)  
   create(@Body() body: { name: string; description?: string }) {
     return this.careerService.create(body);
   }
 
   @Post(':id/courses')
+  @UseGuards(ExternalJwtAuthGuard)
   addCourse(@Param('id') careerId: string, @Body('courseId') courseId: string) {
     return this.careerService.addCourse(careerId, courseId);
   }
@@ -38,7 +42,4 @@ export class CareerController {
   upsertFromCore(@Body() body: { id: string; name: string; description?: string }) {
     return this.careerService.upsertFromCore(body);
   }
-
-
-  
 }

@@ -13,6 +13,7 @@ export class AttendanceController {
     return this.attendanceService.upsertFromCore(dto);
   }
 
+  @UseGuards(ExternalJwtAuthGuard)
   @Post(':userId')
   markAttendance(
     @Param('commissionId') commissionId: string,
@@ -38,7 +39,8 @@ export class AttendanceController {
       commissionId,
     );
   }
-
+  
+  @UseGuards(ExternalJwtAuthGuard)
   @Get()
   getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);

@@ -6,7 +6,7 @@ import { CoreNotificationDto } from './dto/core-notification.dto';
 
 @Controller('/notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(private readonly notificationsService: NotificationsService) { }
 
   @UseGuards(ExternalJwtAuthGuard)
   @Get()
@@ -20,13 +20,14 @@ export class NotificationsController {
     return this.notificationsService.getLatest(userId);
   }
 
+  @UseGuards(ExternalJwtAuthGuard)
   @Post()
   create(@Body() dto: CreateNotificationDto) {
     return this.notificationsService.create(dto);
   }
 
   @UseGuards(ExternalJwtAuthGuard)
-   @Patch(':notificationId')
+  @Patch(':notificationId')
   update(
     @Param('notificationId') id: string,
     @Body() body: { isRead?: boolean },
@@ -39,6 +40,4 @@ export class NotificationsController {
     console.log('🔥 DTO REAL RECIBIDO EN BACKEND:', dto);
     return this.notificationsService.upsertFromCore(dto);
   }
-
-
 }

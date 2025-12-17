@@ -16,36 +16,33 @@ import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('transactions')
 export class TransactionController {
-  constructor(private readonly txService: TransactionService) {}
+  constructor(private readonly txService: TransactionService) { }
 
   @Post('core-event')
   async receiveFromCore(@Body() body: any) {
-    // Si viene el evento completo, extraer solo el payload; si viene solo el payload, usarlo directamente
     const payload: TransactionDto = body.payload || body;
     return this.txService.processCoreEvent(payload);
   }
 
+  @UseGuards(ExternalJwtAuthGuard)
   @Get()
   async findAll() {
     return this.txService.findAll();
   }
 
- 
-   @UseGuards(ExternalJwtAuthGuard)
-   @Get('wallet')
-   deposit(
-     @Req() req,
-   ) {
-     const token = req.headers.authorization;
-     const walletId = req.user?.wallet?.[0]; 
- 
-     return this.txService.findByWalletId(walletId);
-   }
+  @UseGuards(ExternalJwtAuthGuard)
+  @Get('wallet')
+  deposit(
+    @Req() req,
+  ) {
+    const token = req.headers.authorization;
+    const walletId = req.user?.wallet?.[0];
+    return this.txService.findByWalletId(walletId);
+  }
 
+  @UseGuards(ExternalJwtAuthGuard)
   @Get(':uuid')
   async findOne(@Param('uuid') uuid: string) {
     return this.txService.findOne(uuid);
   }
-
-
 }

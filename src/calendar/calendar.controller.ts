@@ -25,7 +25,7 @@ export class CalendarController {
     return this.service.syncFromAcademic(userUuid, token);
   }
 
-
+  @UseGuards(ExternalJwtAuthGuard)
   @Get()
   getAll(
     @Query('from') from?: string,
@@ -34,7 +34,7 @@ export class CalendarController {
   ) {
     return this.service.findAll(from, to, eventType);
   }
-
+  @UseGuards(ExternalJwtAuthGuard)
   @Get(':id')
   getOne(@Param('id') id: string) {
     return this.service.findOne(String(id));
@@ -52,18 +52,18 @@ export class CalendarController {
   }
 
   @Put(':id')
+  @UseGuards(ExternalJwtAuthGuard)
   update(@Param('id') id: string, @Body() body: Partial<CreateCalendarEventDto>) {
     return this.service.update(String(id), body);
   }
 
   @Post('classes-by-commissions')
-  @UseGuards(ExternalJwtAuthGuard) // opcional, para tu backend
+  @UseGuards(ExternalJwtAuthGuard) 
   async getClassesByCommissions(
     @Body() body: GetClassesByCommissionsDto
   ) {
     return this.service.getClassesByCommissions(body.commissionIds);
   }
-
 
   @Patch(':id')
   updateEventStatus(
@@ -72,6 +72,7 @@ export class CalendarController {
   ) {
     return this.service.updateStatus(id, body.status);
   }
+  
   @UseGuards(ExternalJwtAuthGuard)
   @Post('sync')
   sync(@Req() req) {

@@ -9,17 +9,19 @@ export class DinningController {
   constructor(private readonly dinningService: DinningService) {}
 
   @Get()
+  @UseGuards(ExternalJwtAuthGuard)
   findAll() {
     return this.dinningService.findAll();
   }
 
-  //@UseGuards(ExternalJwtAuthGuard)
   @Get('user/:userId')
+  @UseGuards(ExternalJwtAuthGuard)
   findByUser(@Param('userId') userId: string) {
     return this.dinningService.findByUser(userId);
   }
 
   @Get(':id')
+  @UseGuards(ExternalJwtAuthGuard)
   findOne(@Param('id') reservationId: number) {
     return this.dinningService.findOne(reservationId);
   }

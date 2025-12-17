@@ -7,7 +7,8 @@ import { User } from 'src/auth/user.decorator';
 @Controller('users/:userId/purchases')
 export class PurchasesController {
   constructor(private readonly purchasesService: PurchasesService) {}
-
+  
+  @UseGuards(ExternalJwtAuthGuard)
   @Post()
   create(
     @Param('userId') userId: string,
@@ -45,7 +46,4 @@ export class PurchasesController {
   async upsertFromCore(@Body() payload: any) {
     return this.purchasesService.upsertFromCore(payload);
   }
-
-
-
 }

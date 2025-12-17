@@ -46,6 +46,7 @@ export class EnrollmentsController {
   ) {
     return this.enrollmentsService.findEnrollmentDetail(userId, commissionId);
   }
+  
   @Post('core-event')
   async upsertFromCore(@Body() payload: any) {
     console.log(

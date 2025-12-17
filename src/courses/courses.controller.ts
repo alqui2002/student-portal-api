@@ -7,8 +7,8 @@ import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) { }
 
-  @UseGuards(ExternalJwtAuthGuard)
   @Get()
+  @UseGuards(ExternalJwtAuthGuard)
   findAll(
     @Query('userId') userId?: string,
     @Query('status') status?: string
@@ -35,11 +35,13 @@ export class CoursesController {
   }
 
   @Get(':id')
+  @UseGuards(ExternalJwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id);
   }
 
   @Post()
+  @UseGuards(ExternalJwtAuthGuard)
   create(@Body() dto: CreateCourseDto) {
     return this.coursesService.create(dto);
   }
