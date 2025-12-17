@@ -65,7 +65,7 @@ export class CalendarController {
   @UseGuards(ExternalJwtAuthGuard)
   @Post('sync')
   sync(@Req() req) {
-    console.log('REQ.USER =>', req.user);
-    return this.syncService.syncUserCalendar(req.user.userId);
+    console.log('REQ.USER =>', req.sub);
+    return this.syncService.syncUserCalendar(req.sub);
   }
   }
