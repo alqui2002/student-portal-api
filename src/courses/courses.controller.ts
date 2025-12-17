@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException, Req, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, UseGuards, BadRequestException, Req, Patch, Delete } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
@@ -56,6 +56,18 @@ export class CoursesController {
     }
 
     return this.coursesService.addCorrelative(courseId, correlativeId);
+  }
+
+  @Delete(':id/correlatives')
+  removeCorrelative(
+    @Param('id') courseId: string,
+    @Body('correlativeId') correlativeId: string,
+  ) {
+    if (!correlativeId) {
+      throw new BadRequestException('correlativeId is required');
+    }
+
+    return this.coursesService.removeCorrelative(courseId, correlativeId);
   }
 
 

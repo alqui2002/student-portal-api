@@ -484,6 +484,44 @@ export class CoursesService {
       correlates: course.correlates,
     };
   }
+  async removeCorrelative(courseId: string, correlativeId: string) {
+    if (!isUuid(courseId)) {
+      throw new BadRequestException('Invalid courseId');
+    }
+
+    if (!isUuid(correlativeId)) {
+      throw new BadRequestException('Invalid correlativeId');
+    }
+
+    const course = await this.courseRepo.findOne({
+      where: { id: courseId },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course ${courseId} not found`);
+    }
+
+    const correlates = Array.isArray(course.correlates)
+      ? course.correlates
+      : [];
+
+    if (!correlates.includes(correlativeId)) {
+      return {
+        success: true,
+        message: 'Correlative not found on course',
+        correlates,
+      };
+    }
+
+    course.correlates = correlates.filter(id => id !== correlativeId);
+    await this.courseRepo.save(course);
+
+    return {
+      success: true,
+      courseId,
+      correlates: course.correlates,
+    };
+  }
 
 
 }
