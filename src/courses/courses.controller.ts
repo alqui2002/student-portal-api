@@ -70,6 +70,11 @@ export class CoursesController {
     return this.coursesService.removeCorrelative(courseId, correlativeId);
   }
 
+  @Delete(':id')
+  @UseGuards(ExternalJwtAuthGuard)
+  removeCourse(@Param('id') courseId: string) {
+    return this.coursesService.removeCourse(courseId);
+  }
 
   @Post('core-event')
   async upsertFromCore(@Body() body: {

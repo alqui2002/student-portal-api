@@ -10,6 +10,7 @@ import { Course } from './entities/course.entity';
 import { User } from '../user/entities/user.entity';
 import { Career } from 'src/career/entities/career.entity';
 import { Commission } from 'src/commission/entities/commission.entity';
+import { Enrollment } from '../enrollment/entities/enrollment.entity';
 import axios from 'axios';
 
 const CORE_API_BASE_URL =
@@ -524,6 +525,42 @@ export class CoursesService {
       courseId,
       correlates: course.correlates,
     };
+  }
+
+  async removeCourse(courseId: string) {
+    if (!courseId || !isUuid(courseId)) {
+      throw new BadRequestException('Invalid course ID');
+    }
+
+    const exists = await this.courseRepo.findOne({
+      where: { id: courseId },
+    });
+
+    if (!exists) {
+      throw new NotFoundException(`Course ${courseId} not found`);
+    }
+
+    await this.courseRepo.manager.transaction(async (manager) => {
+      await manager
+        .getRepository(Enrollment)
+        .createQueryBuilder()
+        .delete()
+        .from(Enrollment)
+        .where('courseId = :courseId', { courseId })
+        .execute();
+
+      await manager
+        .getRepository(Commission)
+        .createQueryBuilder()
+        .delete()
+        .from(Commission)
+        .where('courseId = :courseId', { courseId })
+        .execute();
+
+      await manager.getRepository(Course).delete(courseId);
+    });
+
+    return { success: true, courseId };
   }
 
 
