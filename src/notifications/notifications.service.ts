@@ -107,14 +107,15 @@ async upsertFromCore(dto: CoreNotificationDto) {
     id: dto.uuid,
     user,
     title: dto.title,
-    type: NotiType.Event, // o el enum que uses
-    metadata: (dto as any).metadata ?? null, // 👈 clave
+    message: dto.message ?? dto.title,
+    type,
+    metadata: dto.metadata ?? null,
     isRead: false,
-    message: dto.title, 
     createdAt: dto.created_at
       ? new Date(dto.created_at)
       : new Date(),
   });
+  
 
 
   await this.notificationRepo.save(notification);

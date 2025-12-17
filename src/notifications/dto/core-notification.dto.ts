@@ -13,11 +13,13 @@ export class CoreNotificationDto {
   title: string;
 
   @IsString()
+  @IsOptional()
   @IsNotEmpty()
-  message: string;
+  message?: string;
 
+  @IsOptional()
   @IsEnum(NotiType)
-  type: NotiType;
+  type?: NotiType;
 
   @IsOptional()
   @IsString()

@@ -34,10 +34,11 @@ export class NotificationsController {
     return this.notificationsService.update(id, body);
   }
 
-  // notifications.controller.ts
   @Post('core-event')
-  upsertFromCore(@Body() dto: CoreNotificationDto) {
+  upsertFromCore(@Body() dto: any) {
+    console.log('🔥 DTO REAL RECIBIDO EN BACKEND:', dto);
     return this.notificationsService.upsertFromCore(dto);
   }
+
 
 }
