@@ -1,15 +1,16 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Patch, Req } from '@nestjs/common';
 import { CalendarService } from './calendar.service';
+import { CalendarSyncService } from './calendar-sync.service';
+
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { User } from 'src/auth/user.decorator';
-import { CalendarSyncService } from './calendar-sync.service';
 
 @Controller('calendar')
 export class CalendarController {
   constructor(
     private readonly service: CalendarService,
-    private readonly calendarSyncService: CalendarSyncService
+    private readonly syncService: CalendarSyncService
   ) {}
 
 
@@ -63,7 +64,7 @@ export class CalendarController {
   }
   @Post('sync')
   sync(@Req() req) {
-    return this.calendarSyncService.syncUserCalendar(req.user.id);
+    return this.syncService.syncUserCalendar(req.user.id);
   }
 
 

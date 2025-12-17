@@ -15,5 +15,6 @@ import { HttpModule } from '@nestjs/axios';
   imports: [TypeOrmModule.forFeature([Enrollment, User, Course, Commission, AcademicHistory]), GradesModule, HttpModule],
   controllers: [EnrollmentsController],
   providers: [EnrollmentsService],
+  exports: [EnrollmentsService], 
 })
 export class EnrollmentsModule {}

@@ -11,8 +11,7 @@ export class CalendarService {
   constructor(
     @InjectRepository(CalendarEvent)
     private readonly calendarRepository: Repository<CalendarEvent>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    
   ) {}
 
   findAll(from?: string, to?: string, eventType?: string) {
@@ -37,31 +36,27 @@ export class CalendarService {
   }
 
   async findByUser(userId: string) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
-  
     const events = await this.calendarRepository.find({
       where: [
-        { user: { id: userId } }, 
-        { user: IsNull() },           
+        { user: { id: userId } },
+        { user: IsNull() },
       ],
       order: { date: 'ASC' },
       relations: ['user'],
     });
-  
+
     if (!events.length)
       throw new NotFoundException('No events found for this user');
-  
+
     return events;
   }
   
 
   async create(dto: CreateCalendarEventDto) {
     const event = this.calendarRepository.create(dto);
-
+    
     if (dto.userId) {
-      const user = await this.userRepository.findOneBy({ id: dto.userId });
-      if (user) event.user = user;
+      event.user = { id: dto.userId } as User;
     }
 
     return this.calendarRepository.save(event);
@@ -87,69 +82,53 @@ export class CalendarService {
   return this.calendarRepository.save(event);
 }
 async syncFromAcademic(userUuid: string, token: string) {
-  const url = 'https://eventos-academicos-service-1.onrender.com/api/events';
+    const url =
+      'https://eventos-academicos-service-1.onrender.com/api/events';
 
+    const response = await axios.get(url, {
+      params: { endDate: '2030-12-30' },
+      headers: {
+        authorization: `Bearer ${token}`,
+        userid: userUuid,
+      },
+    });
 
-  const response = await axios.get(url, {
-    params: {
-      endDate: "2030-12-30",
-    },
-    headers: {
-      authorization: `Bearer ${token}`,
-      userid: userUuid,
+    const events = Array.isArray(response.data) ? response.data : [];
+
+    if (!events.length)
+      return { success: true, inserted: 0, totalReceived: 0 };
+
+    let inserted = 0;
+
+    for (const ev of events) {
+      const exists = await this.calendarRepository.findOne({
+        where: { id: ev.id },
+      });
+
+      if (exists) continue;
+
+      const newEvent = this.calendarRepository.create({
+        id: ev.id,
+        title: ev.name ?? '(Sin título)',
+        description: ev.description ?? '',
+        startDateTime: new Date(ev.startTime),
+        endDateTime: new Date(ev.endTime),
+        eventType: 'Evento',
+        sourceModule: 'AcademicEvents',
+        user: { id: userUuid }, // 👈 sin UserRepository
+        date: ev.startTime.substring(0, 10),
+      });
+
+      await this.calendarRepository.save(newEvent);
+      inserted++;
     }
-  });
 
-  const events = Array.isArray(response.data) ? response.data : [];
-
-
-  if (events.length === 0) {
-    return { success: true, inserted: 0, totalReceived: 0 };
+    return {
+      success: true,
+      inserted,
+      totalReceived: events.length,
+    };
   }
-
-  const user = await this.userRepository.findOne({
-    where: { id: userUuid }
-  });
-
-  if (!user) throw new NotFoundException("User not found");
-
-  let inserted = 0;
-
-
-
-for (const ev of events) {
-
- 
-  const exists = await this.calendarRepository.findOne({
-    where: { id: ev.id }
-  });
-
-  if (exists) continue;
-
-  const newEvent = this.calendarRepository.create({
-    id: ev.id,  
-    title: ev.name ?? "(Sin título)",
-    description: ev.description ?? "",
-    startDateTime: new Date(ev.startTime),
-    endDateTime: new Date(ev.endTime),
-    eventType: "Evento",
-    sourceModule: "AcademicEvents",
-    user,
-    date: ev.startTime.substring(0, 10),
-  });
-
-  await this.calendarRepository.save(newEvent);
-  inserted++;
-
-
-  }
-
-  return {
-    success: true,
-    inserted,
-    totalReceived: events.length,
-  };
-}
 
 
 }
