@@ -18,9 +18,9 @@ export class Career {
 
     @ManyToMany(() => Course, (course) => course.careers, { cascade: true })
     @JoinTable({
-        name: 'career_courses', 
-        joinColumn: { name: 'career_id', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'course_id', referencedColumnName: 'id' },
+        name: 'career_courses',
+        joinColumns: [{ name: 'career_id', referencedColumnName: 'id' }],
+        inverseJoinColumns: [{ name: 'course_id', referencedColumnName: 'id' }],
     })
     courses: Course[];
 }

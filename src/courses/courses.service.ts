@@ -557,6 +557,13 @@ export class CoursesService {
         .where('courseId = :courseId', { courseId })
         .execute();
 
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from('career_courses')
+        .where('course_id = :courseId', { courseId })
+        .execute();
+
       await manager.getRepository(Course).delete(courseId);
     });
 
