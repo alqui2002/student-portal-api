@@ -63,10 +63,13 @@ export class CalendarController {
     return this.service.updateStatus(id, body.status);
   }
   @UseGuards(ExternalJwtAuthGuard)
-  @Post('sync')
-  sync(@Req() req) {
-    return this.syncService.syncUserCalendar(req.user.id);
-  }
+@Post('sync')
+async sync(@Req() req) {
+  // 👇 ESTE es el cambio clave
+  const userId = req.user.userId; 
+
+  return this.syncService.syncUserCalendar(userId);
+}
 
 
 }
