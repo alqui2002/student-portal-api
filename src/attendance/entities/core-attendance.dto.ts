@@ -8,7 +8,7 @@ export class AttendanceFromCoreDto {
   courseId: string;
 
   @IsString()
-  date: string; // YYYY-MM-DD
+  date: string; 
 
   @IsIn(['P', 'A', 'M'])
   status: 'P' | 'A' | 'M';

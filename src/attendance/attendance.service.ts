@@ -24,9 +24,7 @@ export class AttendanceService {
     if (!user || !commission) {
       throw new NotFoundException('User or commission not found');
     }
-
     const attendanceDate = date || new Date().toISOString().split('T')[0];
-
     let attendance = await this.attendanceRepo.findOne({
       where: { user: { id: userId }, commission: { id: commissionId }, date: attendanceDate },
     });
@@ -61,24 +59,21 @@ export class AttendanceService {
   }
   async upsertFromCore(dto: AttendanceFromCoreDto) {
     const { studentId, courseId, date, status } = dto;
-  
-    // 1️⃣ Buscar usuario
+
     const user = await this.userRepo.findOne({
       where: { id: studentId },
     });
     if (!user) {
       throw new NotFoundException(`User ${studentId} not found`);
     }
-  
-    // 2️⃣ Buscar comisión
+
     const commission = await this.commissionRepo.findOne({
       where: { id: courseId },
     });
     if (!commission) {
       throw new NotFoundException(`Commission ${courseId} not found`);
     }
-  
-    // 3️⃣ Buscar asistencia existente (clave lógica)
+
     let attendance = await this.attendanceRepo.findOne({
       where: {
         user: { id: user.id },
@@ -86,22 +81,18 @@ export class AttendanceService {
         date,
       },
     });
-  
-    // 4️⃣ Si existe → UPDATE
+
     if (attendance) {
       attendance.present = status as AttendanceStatus;
       return this.attendanceRepo.save(attendance);
     }
-  
-    // 5️⃣ Si no existe → CREATE
     attendance = this.attendanceRepo.create({
       user,
       commission,
       date,
       present: status as AttendanceStatus,
     });
-  
+
     return this.attendanceRepo.save(attendance);
   }
-  
 }

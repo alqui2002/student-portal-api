@@ -16,11 +16,7 @@ export class DinningService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
-
-  // ---------------------------------------------------------------------------
-  // GETTERS
-  // ---------------------------------------------------------------------------
+  ) { }
 
   findAll() {
     return this.dinningRepository.find({ relations: ['user'] });
@@ -65,10 +61,6 @@ export class DinningService {
     return reservation;
   }
 
-  // ---------------------------------------------------------------------------
-  // CREATE
-  // ---------------------------------------------------------------------------
-
   async create(dto: CreateDinningReservationDto) {
     const { userId, reservationId, ...rest } = dto;
 
@@ -82,7 +74,6 @@ export class DinningService {
       status: rest.status,
       cost: rest.cost,
 
-      // ⏱️ strings tal cual llegan
       slotStartTime: rest.slotStartTime,
       slotEndTime: rest.slotEndTime,
 
@@ -97,10 +88,6 @@ export class DinningService {
 
     return this.dinningRepository.save(reservation);
   }
-
-  // ---------------------------------------------------------------------------
-  // UPDATE
-  // ---------------------------------------------------------------------------
 
   async update(reservationId: number, dto: UpdateDinningReservationDto) {
     const reservation = await this.findOne(reservationId);
@@ -142,10 +129,6 @@ export class DinningService {
 
     return this.dinningRepository.save(reservation);
   }
-
-  // ---------------------------------------------------------------------------
-  // DELETE
-  // ---------------------------------------------------------------------------
 
   async remove(reservationId: number) {
     const reservation = await this.findOne(reservationId);

@@ -5,10 +5,8 @@ import {
   IsOptional,
   IsString,
   IsUUID,
-  ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { Expose } from 'class-transformer';
 
 class SlotTimeDto {
   @IsNumber()

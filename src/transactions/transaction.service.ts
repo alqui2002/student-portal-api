@@ -9,12 +9,9 @@ export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionRepo: Repository<Transaction>,
-  ) {}
+  ) { }
 
   async processCoreEvent(payload: TransactionDto) {
-    console.log('Processing transaction payload:', payload);
-    
-    // Verificar si la transacción ya existe
     const exists = await this.transactionRepo.findOne({
       where: { uuid: payload.uuid },
     });
@@ -22,8 +19,6 @@ export class TransactionService {
     if (exists) {
       return exists;
     }
-
-    // Crear nueva transacción
     const transaction = this.transactionRepo.create({
       uuid: payload.uuid,
       from_wallet_uuid: payload.from_wallet_uuid,

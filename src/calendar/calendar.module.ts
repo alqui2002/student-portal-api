@@ -13,14 +13,13 @@ import { EnrollmentsModule } from '../enrollment/enrollment.module';
     TypeOrmModule.forFeature([CalendarEvent]),
     HttpModule,
     User,
-    EnrollmentsModule, // 👈 CLAVE
-
+    EnrollmentsModule,
   ],
   controllers: [CalendarController],
   providers: [
     CalendarService,
-    CalendarSyncService, // 👈 ESTO FALTABA
+    CalendarSyncService,
   ],
 })
-export class CalendarModule {}
+export class CalendarModule { }
 

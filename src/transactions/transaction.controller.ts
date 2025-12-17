@@ -4,8 +4,6 @@ import {
   Body,
   Get,
   Param,
-  Headers,
-  BadRequestException,
   UseGuards,
   Req,
 } from '@nestjs/common';

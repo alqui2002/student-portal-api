@@ -1,4 +1,3 @@
-// src/grades/grades.controller.ts
 import {
   Controller,
   Get,
@@ -13,12 +12,12 @@ import { GradesService } from './grades.service';
 import { UpdateGradeDto } from './dto/update-grade.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { GetGradesResponseDto } from './dto/get-grades-response.dto';
-import { ApiOkResponse } from '@nestjs/swagger'; 
-  
+import { ApiOkResponse } from '@nestjs/swagger';
+
 @Controller('grades')
-@UseInterceptors(ClassSerializerInterceptor) 
+@UseInterceptors(ClassSerializerInterceptor)
 export class GradesController {
-  constructor(private readonly gradesService: GradesService) {}
+  constructor(private readonly gradesService: GradesService) { }
 
   @Patch('user/:userId/commission/:commissionId')
   upsertGrade(
@@ -34,12 +33,12 @@ export class GradesController {
   }
 
   @UseGuards(ExternalJwtAuthGuard)
-  @ApiOkResponse({ type: GetGradesResponseDto }) 
+  @ApiOkResponse({ type: GetGradesResponseDto })
   @Get('user/:userId/commission/:commissionId')
   getByUserAndCommission(
     @Param('userId') userId: string,
     @Param('commissionId') commissionId: string,
-  ): Promise<GetGradesResponseDto> { 
+  ): Promise<GetGradesResponseDto> {
     return this.gradesService.findByUserAndCommission(
       userId,
       commissionId,

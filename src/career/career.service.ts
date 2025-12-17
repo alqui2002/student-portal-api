@@ -48,42 +48,40 @@ export class CareerService {
 
   async syncCareersFromCore(token: string) {
     try {
-      // 1) Llamo al CORE
       const response = await axios.get(
         "https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/carreras",
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-  
+
       const careers = response.data?.data ?? [];
-  
+
       let inserted = 0;
-  
+
       for (const c of careers) {
         const exists = await this.careerRepo.findOne({
           where: { id: c.uuid }
         });
-  
+
         if (!exists) {
-          // 2) Mapear SOLO lo que tu entity acepta
           const newCareer = this.careerRepo.create({
             id: c.uuid,
             name: c.name,
             description: c.description ?? null,
           });
-  
+
           await this.careerRepo.save(newCareer);
           inserted++;
         }
       }
-  
+
       return {
         success: true,
         totalReceived: careers.length,
         inserted,
       };
-  
+
     } catch (err) {
       console.error(err);
       throw new Error("Error al sincronizar carreras del CORE");
@@ -94,22 +92,20 @@ export class CareerService {
     const existing = await this.careerRepo.findOne({
       where: { id: dto.id },
     });
-  
+
     if (!existing) {
       const career = this.careerRepo.create({
         name: dto.name,
         ...(dto.description ? { description: dto.description } : {}),
       });
       (career as any).id = dto.id;
-      
+
       return this.careerRepo.save(career);
-          }
-  
+    }
+
     existing.name = dto.name;
     existing.description = dto.description ?? existing.description;
-  
+
     return this.careerRepo.save(existing);
   }
-  
-  
 }  

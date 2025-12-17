@@ -14,7 +14,6 @@ export class CalendarController {
     private readonly syncService: CalendarSyncService
   ) { }
 
-
   @Get('sync')
   @UseGuards(ExternalJwtAuthGuard)
   async syncFromAcademic(
@@ -76,7 +75,6 @@ export class CalendarController {
   @UseGuards(ExternalJwtAuthGuard)
   @Post('sync')
   sync(@Req() req) {
-    console.log('REQ.USER =>', req.sub);
     return this.syncService.syncUserCalendar(req.sub);
   }
 }

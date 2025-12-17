@@ -4,7 +4,7 @@ import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 
 @Controller('academic-history')
 export class AcademicHistoryController {
-  constructor(private readonly academicHistoryService: AcademicHistoryService) {}
+  constructor(private readonly academicHistoryService: AcademicHistoryService) { }
 
   @UseGuards(ExternalJwtAuthGuard)
   @Get(':userId')

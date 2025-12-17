@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { HttpModule } from '@nestjs/axios'; // <--- Vital para que funcione tu inyección
+import { HttpModule } from '@nestjs/axios';
 
 import { AccountService } from './account.service';
 import { AccountController } from './account.controller';
@@ -10,9 +10,9 @@ import { User } from '../user/entities/user.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Account, User]),
-    HttpModule, // <--- Obligatorio porque el Servicio usa HttpService
+    HttpModule,
   ],
   controllers: [AccountController],
   providers: [AccountService],
 })
-export class AccountModule {}
+export class AccountModule { }

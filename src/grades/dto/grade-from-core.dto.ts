@@ -1,4 +1,3 @@
-// grades/dto/grade-from-core.dto.ts
 import { IsUUID, IsNumber, Min, Max, IsIn } from 'class-validator';
 
 export class GradeFromCoreDto {

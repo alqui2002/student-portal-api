@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { Notification, NotiType } from './entities/notifications.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { EventType } from 'src/calendar/entities/calendar-event.entity';
 import { CoreNotificationDto } from './dto/core-notification.dto';
 
 @Injectable()
@@ -48,83 +47,79 @@ export class NotificationsService {
       title,
       message,
       type,
-      isRead: false, 
+      isRead: false,
     };
 
     return this.notificationRepo.save(notification);
   }
 
   async update(id: string, body: { isRead?: boolean }) {
-  const notification = await this.notificationRepo.findOne({ where: { id } });
-  if (!notification) throw new NotFoundException('Notification not found');
+    const notification = await this.notificationRepo.findOne({ where: { id } });
+    if (!notification) throw new NotFoundException('Notification not found');
 
-  if (body.isRead !== undefined) {
-    notification.isRead = body.isRead;
+    if (body.isRead !== undefined) {
+      notification.isRead = body.isRead;
+    }
+
+    return this.notificationRepo.save(notification);
   }
+  async upsertFromCore(dto: CoreNotificationDto) {
+    const exists = await this.notificationRepo.findOne({
+      where: { id: dto.uuid },
+    });
 
-  return this.notificationRepo.save(notification);
-}
-async upsertFromCore(dto: CoreNotificationDto) {
-  const exists = await this.notificationRepo.findOne({
-    where: { id: dto.uuid },
-  });
+    if (exists) {
+      return {
+        success: true,
+        notificationId: exists.id,
+        skipped: true,
+      };
+    }
 
-  if (exists) {
+    const user = await this.userRepo.findOne({
+      where: { id: dto.user_uuid },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User ${dto.user_uuid} not found for notification`,
+      );
+    }
+
+    const titleLower = (dto.title ?? '').toLowerCase();
+    let type: NotiType = NotiType.Event;
+
+    if (titleLower.includes('sancion') || titleLower.includes('sanción')) {
+      type = NotiType.Sanction;
+    } else if (
+      titleLower.includes('nota') ||
+      titleLower.includes('examen') ||
+      titleLower.includes('parcial') ||
+      titleLower.includes('final')
+    ) {
+      type = NotiType.Exam;
+    }
+
+    const notification = this.notificationRepo.create({
+      id: dto.uuid,
+      user,
+      title: dto.title,
+      message: dto.message ?? dto.title,
+      type,
+      metadata: dto.metadata ?? null,
+      isRead: false,
+      createdAt: dto.created_at
+        ? new Date(dto.created_at)
+        : new Date(),
+    });
+
+
+
+    await this.notificationRepo.save(notification);
+
     return {
       success: true,
-      notificationId: exists.id,
-      skipped: true,
+      notificationId: notification.id,
     };
   }
-
-  // 2️⃣ Validar usuario
-  const user = await this.userRepo.findOne({
-    where: { id: dto.user_uuid },
-  });
-
-  if (!user) {
-    throw new NotFoundException(
-      `User ${dto.user_uuid} not found for notification`,
-    );
-  }
-
-  const titleLower = (dto.title ?? '').toLowerCase();
-  let type: NotiType = NotiType.Event;
-
-  if (titleLower.includes('sancion') || titleLower.includes('sanción')) {
-    type = NotiType.Sanction;
-  } else if (
-    titleLower.includes('nota') ||
-    titleLower.includes('examen') ||
-    titleLower.includes('parcial') ||
-    titleLower.includes('final')
-  ) {
-    type = NotiType.Exam;
-  }
-
-  // 3️⃣ Crear notificación
-  const notification = this.notificationRepo.create({
-    id: dto.uuid,
-    user,
-    title: dto.title,
-    message: dto.message ?? dto.title,
-    type,
-    metadata: dto.metadata ?? null,
-    isRead: false,
-    createdAt: dto.created_at
-      ? new Date(dto.created_at)
-      : new Date(),
-  });
-  
-
-
-  await this.notificationRepo.save(notification);
-
-  return {
-    success: true,
-    notificationId: notification.id,
-  };
-}
-
-
 }

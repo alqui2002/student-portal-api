@@ -1,4 +1,3 @@
-// notifications/dto/core-notification.dto.ts
 import { IsString, IsUUID, IsOptional, IsNotEmpty, IsEnum } from 'class-validator';
 import { NotiType } from '../entities/notifications.entity';
 

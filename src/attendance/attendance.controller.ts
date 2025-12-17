@@ -6,7 +6,7 @@ import { AttendanceStatus } from './entities/attendance.entity';
 
 @Controller('commissions/:commissionId/attendances')
 export class AttendanceController {
-  constructor(private readonly attendanceService: AttendanceService) {}
+  constructor(private readonly attendanceService: AttendanceService) { }
 
   @Post('core-event')
   upsertFromCore(@Body() dto: AttendanceFromCoreDto) {
@@ -21,7 +21,7 @@ export class AttendanceController {
     @Body() body: { present: AttendanceStatus; date?: string },
   ) {
     return this.attendanceService.markAttendance(
-      userId,           
+      userId,
       commissionId,
       body.present,
       body.date,
@@ -35,17 +35,14 @@ export class AttendanceController {
     @Param('userId') userId: string,
   ) {
     return this.attendanceService.getUserAttendance(
-      userId,           
+      userId,
       commissionId,
     );
   }
-  
+
   @UseGuards(ExternalJwtAuthGuard)
   @Get()
   getCommissionAttendance(@Param('commissionId') commissionId: string) {
     return this.attendanceService.getCommissionAttendance(commissionId);
   }
-
- 
-
 }

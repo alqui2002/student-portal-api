@@ -14,8 +14,7 @@ export class PurchasesService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-  ) {}
-
+  ) { }
 
   async create(userId: string, dto: CreatePurchaseDto) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -23,7 +22,7 @@ export class PurchasesService {
 
     const purchase = this.purchaseRepo.create({
       user,
-      product: dto.product, 
+      product: dto.product,
       total: dto.total,
     });
 
@@ -50,9 +49,9 @@ export class PurchasesService {
   async syncTransfers(userUuid: string, token: string) {
     try {
       const user = await this.userRepo.findOne({ where: { id: userUuid } });
-  
+
       if (!user) throw new Error('Usuario no encontrado');
-  
+
       const response = await axios.get(
         'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers/mine',
         {
@@ -61,9 +60,9 @@ export class PurchasesService {
           },
         },
       );
-  
+
       const transfers = response.data.data;
-  
+
       const saved: Purchase[] = [];
 
       for (const t of transfers) {
@@ -82,12 +81,11 @@ export class PurchasesService {
         });
 
         const inserted = await this.purchaseRepo.save(purchase);
-        saved.push(inserted); 
+        saved.push(inserted);
       }
 
-  
       return saved;
-  
+
     } catch (err) {
       console.error(err);
       throw new Error('Error al sincronizar transferencias');
@@ -97,31 +95,28 @@ export class PurchasesService {
   async syncStorePurchases(userUuid: string, token: string) {
     const user = await this.userRepo.findOne({ where: { id: userUuid } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
-  
-    // 📌 Nuevo endpoint UADE Store
+
     const { data: orders } = await axios.get(
       `https://uadestore.onrender.com/api/orders/me?userId=${userUuid}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-  
-    // 💾 Buscar compras ya registradas
+
     const existingPurchases = await this.purchaseRepo.find({
       where: { user: { id: user.id } },
     });
-  
+
     const existingDates = new Set(
       existingPurchases.map((p) => p.date.toISOString())
     );
-  
+
     const savedPurchases: Purchase[] = [];
-  
+
     for (const order of orders) {
       const orderDateISO = new Date(order.created_at).toISOString();
       if (existingDates.has(orderDateISO)) continue;
-  
+
       const items = order.Item_compra ?? [];
-  
-      // 🟦 Caso: compra sin items (raro, pero puede pasar)
+
       if (items.length === 0) {
         const purchase = this.purchaseRepo.create({
           user,
@@ -137,15 +132,14 @@ export class PurchasesService {
             },
           ],
         });
-  
+
         savedPurchases.push(await this.purchaseRepo.save(purchase));
         continue;
       }
-  
-      // 🟩 Convertir Item_compra → tu formato product[]
+
       const productArray = items.map((item) => {
         const articulo = item?.Stock?.Articulo;
-  
+
         return {
           name: articulo?.Titulo ?? "Producto UADE Store",
           description: articulo?.descripcion ?? "Sin descripción",
@@ -154,19 +148,18 @@ export class PurchasesService {
           quantity: item.cantidad ?? 1,
         };
       });
-  
-      // 🟧 Crear la compra final
+
       const purchase = this.purchaseRepo.create({
         user,
         total: order.total_compra.toString(),
         date: new Date(order.created_at),
         product: productArray,
       });
-  
+
       const saved = await this.purchaseRepo.save(purchase);
       savedPurchases.push(saved);
     }
-  
+
     return {
       success: true,
       inserted: savedPurchases.length,
@@ -183,17 +176,17 @@ export class PurchasesService {
     const user = await this.userRepo.findOne({
       where: { id: payload.userId },
     });
-  
+
     if (!user) {
       throw new NotFoundException(
         `User ${payload.userId} not found for purchase ${payload.id}`,
       );
     }
-  
+
     let purchase = await this.purchaseRepo.findOne({
       where: { purchase_id: payload.id },
     });
-  
+
     const normalizedProducts = (payload.product ?? []).map((p) => ({
       name: p.name,
       description: p.description ?? '',
@@ -201,7 +194,7 @@ export class PurchasesService {
       subtotal: String(p.subtotal),
       quantity: p.quantity ?? 1,
     }));
-  
+
     if (!purchase) {
       purchase = this.purchaseRepo.create({
         purchase_id: payload.id,
@@ -215,11 +208,9 @@ export class PurchasesService {
       purchase.total = String(payload.total);
       purchase.date = payload.date ? new Date(payload.date) : purchase.date;
     }
-  
+
     await this.purchaseRepo.save(purchase);
-  
+
     return { success: true, purchaseId: purchase.id };
   }
-  
-  
 }

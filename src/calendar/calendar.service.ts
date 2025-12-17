@@ -11,8 +11,8 @@ export class CalendarService {
   constructor(
     @InjectRepository(CalendarEvent)
     private readonly calendarRepository: Repository<CalendarEvent>,
-    
-  ) {}
+
+  ) { }
 
   findAll(from?: string, to?: string, eventType?: string) {
     const query = this.calendarRepository
@@ -50,11 +50,11 @@ export class CalendarService {
 
     return events;
   }
-  
+
 
   async create(dto: CreateCalendarEventDto) {
     const event = this.calendarRepository.create(dto);
-    
+
     if (dto.userId) {
       event.user = { id: dto.userId } as User;
     }
@@ -75,13 +75,13 @@ export class CalendarService {
   }
 
   async updateStatus(id: string, status: string) {
-  const event = await this.calendarRepository.findOne({ where: { id } });
-  if (!event) throw new NotFoundException('Event not found');
+    const event = await this.calendarRepository.findOne({ where: { id } });
+    if (!event) throw new NotFoundException('Event not found');
 
-  event.eventStatus = status;
-  return this.calendarRepository.save(event);
-}
-async syncFromAcademic(userUuid: string, token: string) {
+    event.eventStatus = status;
+    return this.calendarRepository.save(event);
+  }
+  async syncFromAcademic(userUuid: string, token: string) {
     const url =
       'https://eventos-academicos-service-1.onrender.com/api/events';
 
@@ -115,7 +115,7 @@ async syncFromAcademic(userUuid: string, token: string) {
         endDateTime: new Date(ev.endTime),
         eventType: 'Evento',
         sourceModule: 'AcademicEvents',
-        user: { id: userUuid }, // 👈 sin UserRepository
+        user: { id: userUuid },
         date: ev.startTime.substring(0, 10),
       });
 
@@ -159,6 +159,4 @@ async syncFromAcademic(userUuid: string, token: string) {
 
     return results;
   }
-
-
 }

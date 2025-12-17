@@ -69,7 +69,7 @@ export class EnrollmentsService {
     token: string,
   ): Promise<string | null> {
     const endpoint = 'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/inscripciones';
-    
+
     const payload = {
       uuid_curso: commissionId,
       user_uuid: userId,
@@ -84,7 +84,7 @@ export class EnrollmentsService {
 
     try {
       this.logger.log(`Enviando inscripción a API externa: ${JSON.stringify(payload)}`);
-      
+
       const response = await lastValueFrom(
         this.httpService.post(endpoint, payload, {
           headers: {
@@ -93,19 +93,18 @@ export class EnrollmentsService {
           },
         })
       );
-      
+
       const coreUuid = response.data?.uuid || null;
       this.logger.log(`✅ Inscripción enviada exitosamente a API externa → ${endpoint}. Core UUID: ${coreUuid}`);
       return coreUuid;
     } catch (err: any) {
-      const errorMessage = err.response?.data 
+      const errorMessage = err.response?.data
         ? JSON.stringify(err.response.data)
         : err.message;
       const statusCode = err.response?.status || 'N/A';
-      
+
       this.logger.error(`❌ Error enviando inscripción a API externa (${statusCode}): ${errorMessage}`);
       this.logger.error(`Payload enviado: ${JSON.stringify(payload)}`);
-      // No lanzamos el error para no interrumpir el flujo principal
       return null;
     }
   }
@@ -128,7 +127,7 @@ export class EnrollmentsService {
 
     try {
       this.logger.log(`Eliminando inscripción de API externa: ${coreUuid}`);
-      
+
       await lastValueFrom(
         this.httpService.delete(endpoint, {
           headers: {
@@ -138,20 +137,19 @@ export class EnrollmentsService {
           data: {
             razon: 'Baja emitida por alumno',
           },
-          
+
         })
       );
-      
+
       this.logger.log(`✅ Inscripción eliminada exitosamente de API externa → ${endpoint}`);
     } catch (err: any) {
-      const errorMessage = err.response?.data 
+      const errorMessage = err.response?.data
         ? JSON.stringify(err.response.data)
         : err.message;
       const statusCode = err.response?.status || 'N/A';
-      
+
       this.logger.error(`❌ Error eliminando inscripción de API externa (${statusCode}): ${errorMessage}`);
       this.logger.error(`Core UUID: ${coreUuid}`);
-      // No lanzamos el error para no interrumpir el flujo principal
     }
   }
 
@@ -224,7 +222,6 @@ export class EnrollmentsService {
     await this.historyRepo.save(history);
     await this.gradesService.createInitial(user.id, commission.id);
 
-    // Enviar inscripción a API externa y guardar el coreUuid
     if (token) {
       const coreUuid = await this.sendEnrollmentToExternalAPI(userId, commissionId, token);
       if (coreUuid) {
@@ -268,7 +265,6 @@ export class EnrollmentsService {
 
     if (!enrollment) throw new NotFoundException('Enrollment not found');
 
-    // Eliminar inscripción de API externa antes de borrarla localmente
     if (token && enrollment.coreUuid) {
       await this.deleteEnrollmentFromExternalAPI(enrollment.coreUuid, token);
     } else if (token && !enrollment.coreUuid) {
@@ -374,17 +370,17 @@ export class EnrollmentsService {
   async upsertFromCore(dto: {
     uuid: string;
     userId: string;
-    courseId: string;       // MATERIA (Course.id)
-    commissionId: string;   // COMISION (Commission.id)
+    courseId: string;
+    commissionId: string;
     role: string;
     status?: string;
   }) {
     const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     if (!user) throw new NotFoundException(`User ${dto.userId} not found`);
-  
+
     const course = await this.courseRepo.findOne({ where: { id: dto.courseId } });
     if (!course) throw new NotFoundException(`Course ${dto.courseId} not found`);
-  
+
     const commission = await this.commissionRepo.findOne({
       where: { id: dto.commissionId },
       relations: ['course'],
@@ -392,19 +388,18 @@ export class EnrollmentsService {
     if (!commission) {
       throw new NotFoundException(`Commission ${dto.commissionId} not found`);
     }
-  
-    // opcional: asegurar consistencia (comisión pertenece a la materia)
+
     if (commission.course?.id && commission.course.id !== course.id) {
       throw new BadRequestException(
         `Commission ${commission.id} does not belong to course ${course.id}`,
       );
     }
-  
+
     let enrollment = await this.enrollmentRepo.findOne({
       where: { id: dto.uuid },
       relations: ['user', 'course', 'commission'],
     });
-  
+
     if (!enrollment) {
       enrollment = this.enrollmentRepo.create({
         id: dto.uuid,
@@ -417,42 +412,38 @@ export class EnrollmentsService {
       enrollment.course = course;
       enrollment.commission = commission;
     }
-  
+
     await this.enrollmentRepo.save(enrollment);
-  
-    // DOCENTE => alta / baja en la comisión
+
     if (dto.role === 'teacher') {
       const status = dto.status?.toUpperCase();
 
-      // Si viene con BAJA desde el HUB, se limpia el profesor de la comisión
       if (status === 'BAJA') {
         await this.removeProfessorFromCommission(commission);
       } else {
-        // Cualquier otro estado (o sin estado) lo consideramos como alta/asignación
         await this.assignProfessorToCommission(user, commission);
       }
     }
-  
+
     return { success: true };
   }
-  
+
   private async assignProfessorToCommission(user: User, commission: Commission) {
     const name =
       user.name && user.name.trim().length > 0
         ? user.name
         : 'Profesor asignado';
-  
+
     commission.professorName = name;
-  
+
     this.logger.log(
       `👨‍🏫 Asignando profesor "${name}" a comisión ${commission.id}`,
     );
-  
+
     await this.commissionRepo.save(commission);
   }
 
   private async removeProfessorFromCommission(commission: Commission) {
-    // Usamos string vacío para evitar problemas con la columna NOT NULL
     commission.professorName = 'No asignado';
 
     this.logger.log(
@@ -461,7 +452,5 @@ export class EnrollmentsService {
 
     await this.commissionRepo.save(commission);
   }
-
- 
 }
 

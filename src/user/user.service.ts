@@ -22,34 +22,34 @@ export class UserService {
     const existingUser = await this.usersRepository.findOne({
       where: { id: createUserDto.uuid },
     });
-  
+
     if (existingUser) return existingUser;
-  
+
     let career: Career | undefined = undefined;
-  
+
     if (createUserDto.careerId) {
       const foundCareer = await this.careersRepository.findOne({
         where: { id: createUserDto.careerId },
       });
-  
+
       if (!foundCareer)
         throw new NotFoundException(
           `Career with id ${createUserDto.careerId} not found`,
         );
-      
+
       career = foundCareer;
     }
-  
+
     const newUser = this.usersRepository.create({
       id: createUserDto.uuid,
       name: createUserDto.name,
       email: createUserDto.email,
-      career: career, 
+      career: career,
     });
-  
+
     return this.usersRepository.save(newUser);
   }
-  
+
   async findUserWithCourses(id: string) {
     const user = await this.usersRepository.findOne({
       where: { id },
@@ -82,9 +82,8 @@ export class UserService {
       where: { id: dto.uuid },
       relations: ['career'],
     });
-  
+
     if (!user) {
-      // CREATE
       user = this.usersRepository.create({
         id: dto.uuid,
         name: dto.name,
@@ -92,12 +91,10 @@ export class UserService {
 
       });
     } else {
-      // UPDATE
       if (dto.name) user.name = dto.name;
       if (dto.email) user.email = dto.email;
     }
-  
-    // career opcional
+
     if (dto.careerId !== undefined) {
       if (dto.careerId === null) {
       } else {
@@ -107,8 +104,7 @@ export class UserService {
         if (career) user.career = career;
       }
     }
-  
+
     return this.usersRepository.save(user);
   }
-  
 }

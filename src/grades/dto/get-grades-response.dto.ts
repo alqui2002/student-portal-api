@@ -1,9 +1,6 @@
-// src/grades/dto/get-grades-response.dto.ts
-
 import { IsNumber, IsString, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// Sub-DTO para la comisión
 class CommissionDto {
   @IsString()
   id: string;
@@ -37,7 +34,7 @@ export class GetGradesResponseDto {
 
   @IsOptional()
   @IsNumber()
-  recuExam?: number; // ✅ El campo de recuperatorio
+  recuExam?: number;
 
   @IsString()
   status: string;

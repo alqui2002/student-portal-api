@@ -49,9 +49,6 @@ export class EnrollmentsController {
   
   @Post('core-event')
   async upsertFromCore(@Body() payload: any) {
-    console.log(
-      `📨 Enrollment core-event → ${JSON.stringify(payload)}`,
-    );
     return this.enrollmentsService.upsertFromCore(payload);
   } 
 }

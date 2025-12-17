@@ -85,5 +85,4 @@ export class CoursesController {
   }) {
     return this.coursesService.upsertFromCore(body);
   }
-
 }

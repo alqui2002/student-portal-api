@@ -13,7 +13,7 @@ export class UserController {
   findAll(): Promise<User[]> {
     return this.userService.findAll();
   }
-  
+
   @UseGuards(ExternalJwtAuthGuard)
   @Post()
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -35,5 +35,4 @@ export class UserController {
   }) {
     return this.userService.upsertFromCore(body);
   }
-
 }

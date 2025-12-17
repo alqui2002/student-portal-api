@@ -1,7 +1,6 @@
 import { IsString, IsNumber, Matches, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class DepositDto {
-  // ✅ Aceptamos NUMBER (vital para la suma matemática y para coincidir con el Front)
   @IsNumber()
   amount: number;
 
@@ -14,7 +13,6 @@ export class DepositDto {
   @Matches(/^\d{3,4}$/, { message: 'CVV must be 3 or 4 digits' })
   cvv: string;
 
-  // ✅ Campos nuevos necesarios para reportar al CORE
   @IsString()
   @IsNotEmpty()
   type: string;

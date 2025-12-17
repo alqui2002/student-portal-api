@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { CareerService } from './career.service';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
-import { User } from 'src/auth/user.decorator';
 
 @Controller('careers')
 export class CareerController {
@@ -27,7 +26,7 @@ export class CareerController {
   }
 
   @Post()
-  @UseGuards(ExternalJwtAuthGuard)  
+  @UseGuards(ExternalJwtAuthGuard)
   create(@Body() body: { name: string; description?: string }) {
     return this.careerService.create(body);
   }

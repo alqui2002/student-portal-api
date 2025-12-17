@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HttpService } from '@nestjs/axios'; // Para tu método
-import { firstValueFrom } from 'rxjs';       // Para tu método
-import axios from 'axios';                   // Para el método de tus compañeros
-
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import axios from 'axios';
 import { Account } from './entities/account.entity';
 import { User } from '../user/entities/user.entity';
 import { DepositDto } from './dtos/account.dto';
@@ -18,8 +17,8 @@ export class AccountService {
     private readonly accountRepo: Repository<Account>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly httpService: HttpService, // Inyección necesaria para tu deposit
-  ) {}
+    private readonly httpService: HttpService,
+  ) { }
 
   async getBalance(userId: string) {
     const account = await this.accountRepo.findOne({ where: { user: { id: userId } } });
@@ -37,9 +36,9 @@ export class AccountService {
     if (!walletId) {
       throw new NotFoundException('Wallet not found in token');
     }
-    
-      const { amount, type, description, currency } = dto;
-    
+
+    const { amount, type, description, currency } = dto;
+
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -48,31 +47,31 @@ export class AccountService {
       account = this.accountRepo.create({ user, balance: 0 });
     }
 
-    account.balance += amount; 
+    account.balance += amount;
     await this.accountRepo.save(account);
 
     try {
-      const coreUrl = process.env.HUB_URL ;
+      const coreUrl = process.env.HUB_URL;
 
       const corePayload = {
         from: 'SYSTEM',
-        to: walletId, 
+        to: walletId,
         amount,
         currency: currency || 'ARG',
         type: type || 'CARGA_DE_SALDO',
         description: description || 'Transferencia recibida',
       };
-      
+
 
       this.logger.log(`Enviando transacción al CORE: ${type} - $${amount}`);
 
       await firstValueFrom(
         this.httpService.post(
-          `https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers`, 
+          `https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/transfers`,
           corePayload,
           {
             headers: {
-              Authorization: token, 
+              Authorization: token,
               'Content-Type': 'application/json'
             }
           }
@@ -91,8 +90,6 @@ export class AccountService {
     const user = await this.userRepo.findOne({ where: { id: userUuid } });
     if (!user) throw new NotFoundException('User not found');
 
-    // Nota: Ellos usan una URL hardcodeada. Idealmente deberíamos cambiarla a process.env.HUB_URL
-    // pero por ahora dejémosla para no romper su lógica.
     const response = await axios.get(
       'https://jtseq9puk0.execute-api.us-east-1.amazonaws.com/api/wallets/mine',
       {

@@ -29,7 +29,6 @@ export class CalendarSyncService {
 
     for (const enrollment of enrollments) {
       const commissionId = enrollment.commission.id;
-      console.log('https://backoffice-production-df78.up.railway.app/api/v1/clases-individuales/param=id_curso&value=' + commissionId);
       const { data: classes } = await firstValueFrom(
         this.http.get(
           `https://backoffice-production-df78.up.railway.app/api/v1/clases-individuales/param=id_curso&value=${commissionId}`

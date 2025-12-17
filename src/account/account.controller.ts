@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Req, Headers } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { DepositDto } from './dtos/account.dto';
-import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard'; // ✅ Usamos el Guard nuevo
+import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { User } from 'src/auth/user.decorator';
 
 @Controller('account')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(private readonly accountService: AccountService) { }
 
   @UseGuards(ExternalJwtAuthGuard)
   @Get(':userId/balance')
@@ -22,7 +22,7 @@ export class AccountController {
     @Req() req,
   ) {
     const token = req.headers.authorization;
-    const walletId = req.user?.wallet?.[0]; 
+    const walletId = req.user?.wallet?.[0];
 
     return this.accountService.deposit(userId, walletId, dto, token);
   }
