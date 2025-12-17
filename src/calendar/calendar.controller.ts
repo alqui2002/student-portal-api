@@ -3,10 +3,15 @@ import { CalendarService } from './calendar.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { User } from 'src/auth/user.decorator';
+import { CalendarSyncService } from './calendar-sync.service';
 
 @Controller('calendar')
 export class CalendarController {
-  constructor(private readonly service: CalendarService) {}
+  constructor(
+    private readonly service: CalendarService,
+    private readonly calendarSyncService: CalendarSyncService
+  ) {}
+
 
   @Get('sync')
   @UseGuards(ExternalJwtAuthGuard)
@@ -56,4 +61,10 @@ export class CalendarController {
   ) {
     return this.service.updateStatus(id, body.status);
   }
+
+    @Post("sync")
+    sync(@Req() req) {
+      return this.calendarSyncService.syncUserCalendar(req.user.id);
+    }
+
 }
