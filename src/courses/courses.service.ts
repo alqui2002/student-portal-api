@@ -9,6 +9,7 @@ import { Repository, In } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { User } from '../user/entities/user.entity';
 import { Career } from 'src/career/entities/career.entity';
+import { Commission } from 'src/commission/entities/commission.entity';
 import axios from 'axios';
 
 const CORE_API_BASE_URL =
@@ -25,6 +26,8 @@ export class CoursesService {
 
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Commission)
+    private readonly commissionRepo: Repository<Commission>,
   ) { }
 
   async findAll() {

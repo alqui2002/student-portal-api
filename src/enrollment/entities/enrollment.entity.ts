@@ -21,6 +21,7 @@ export class Enrollment {
 
   @ManyToOne(() => Commission, (commission) => commission.enrollments, {
     eager: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'commissionId' })
   commission: Commission;
