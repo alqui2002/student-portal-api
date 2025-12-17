@@ -5,13 +5,14 @@ import { CalendarSyncService } from './calendar-sync.service';
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto';
 import { ExternalJwtAuthGuard } from 'src/auth/external-jwt.guard';
 import { User } from 'src/auth/user.decorator';
+import { GetClassesByCommissionsDto } from './dto/get-classes-by-commissions.dto';
 
 @Controller('calendar')
 export class CalendarController {
   constructor(
     private readonly service: CalendarService,
     private readonly syncService: CalendarSyncService
-  ) {}
+  ) { }
 
 
   @Get('sync')
@@ -55,6 +56,15 @@ export class CalendarController {
     return this.service.update(String(id), body);
   }
 
+  @Post('classes-by-commissions')
+  @UseGuards(ExternalJwtAuthGuard) // opcional, para tu backend
+  async getClassesByCommissions(
+    @Body() body: GetClassesByCommissionsDto
+  ) {
+    return this.service.getClassesByCommissions(body.commissionIds);
+  }
+
+
   @Patch(':id')
   updateEventStatus(
     @Param('id') id: string,
@@ -68,4 +78,4 @@ export class CalendarController {
     console.log('REQ.USER =>', req.sub);
     return this.syncService.syncUserCalendar(req.sub);
   }
-  }
+}

@@ -129,6 +129,36 @@ async syncFromAcademic(userUuid: string, token: string) {
       totalReceived: events.length,
     };
   }
+  async getClassesByCommissions(commissionIds: string[]) {
+    const BASE_URL =
+      'https://backoffice-production-df78.up.railway.app/api/v1/clases-individuales';
+
+    const results = await Promise.all(
+      commissionIds.map(async commissionId => {
+        try {
+          const { data } = await axios.get(BASE_URL, {
+            params: {
+              param: 'id_curso',
+              value: commissionId,
+            },
+          });
+
+          return {
+            commissionId,
+            classes: data,
+          };
+        } catch (error) {
+          return {
+            commissionId,
+            error: true,
+            message: error.message,
+          };
+        }
+      })
+    );
+
+    return results;
+  }
 
 
 }
