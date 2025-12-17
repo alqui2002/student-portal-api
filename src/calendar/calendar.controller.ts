@@ -62,6 +62,7 @@ export class CalendarController {
   ) {
     return this.service.updateStatus(id, body.status);
   }
+  @UseGuards(ExternalJwtAuthGuard)
   @Post('sync')
   sync(@Req() req) {
     return this.syncService.syncUserCalendar(req.user.id);
