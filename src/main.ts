@@ -10,14 +10,14 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      "http://localhost:3002",
-      "http://localhost:3000",
       "https://student-portal-front-production.up.railway.app",
-    ],    
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, 
+      "http://localhost:3000",
+    ],
+    credentials: true,
+    methods: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type,Authorization",
   });
-
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
