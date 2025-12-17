@@ -71,7 +71,6 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @UseGuards(ExternalJwtAuthGuard)
   removeCourse(@Param('id') courseId: string) {
     return this.coursesService.removeCourse(courseId);
   }
